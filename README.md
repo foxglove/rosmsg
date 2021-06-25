@@ -11,7 +11,7 @@ This library supports both [ROS1](http://wiki.ros.org/msg) and [ROS2](https://do
 ## Usage
 
 ```Typescript
-const rosmsg = require("@foxglove/rosmsg");
+import { parse, stringify } from "@foxglove/rosmsg";
 
 const definitionStr = `# geometry_msgs/Pose
 geometry_msgs/Point position
@@ -30,10 +30,10 @@ float64 y
 float64 z
 float64 w`;
 
-const messageDefinition = rosmsg.parse(definitionStr);
+const messageDefinition = parse(definitionStr);
 
-// rosmsg.stringify(messageDefinition) will return a canonical string, similar
-// to _definitionStr_
+// stringify(messageDefinition) will return a canonical string, similar to
+// _definitionStr_
 
 // print the parsed message definition structure
 console.log(JSON.stringify(messageDefinition, null, 2));
