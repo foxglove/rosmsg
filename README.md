@@ -116,4 +116,4 @@ Prints:
 
 ## License
 
-@foxglove/rosmsg is licensed under [Mozilla Public License, v2.0](https://opensource.org/licenses/MPL-2.0).
+@foxglove/rosmsg is licensed under [MIT License](https://opensource.org/licenses/MIT).

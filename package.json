@@ -2,7 +2,7 @@
   "name": "@foxglove/rosmsg",
   "version": "0.1.0",
   "description": "ROS1 and ROS2 message definition parser",
-  "license": "MPL-2.0",
+  "license": "MIT",
   "keywords": [
     "ros",
     "ros1",
