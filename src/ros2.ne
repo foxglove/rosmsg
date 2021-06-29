@@ -52,8 +52,9 @@ stringType -> ("wstring" | "string") upperBound:? {% function(d) { return { type
 timeType -> ("time" | "duration") {% function(d) { return { type: d[0][0].value } } %}
 
 customType -> %fieldOrType {% function(d, _, reject) {
+  const PRIMITIVE_TYPES = ["bool", "byte", "char", "float32", "float64", "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "string", "wstring", "time", "duration"];
   const type = d[0].value;
-  if (type.match(/^bool$|^byte$|^char$|^float32$|^float64$|^int8$|^uint8$|^int16$|^uint16$|^int32$|^uint32$|^int64$|^uint64$|^w?string$|^time$|^duration$/) != undefined) return reject;
+  if (PRIMITIVE_TYPES.includes(type)) return reject;
   return { type };
 } %}
 
