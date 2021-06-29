@@ -281,6 +281,68 @@ describe("parseMessageDefinition", () => {
     ]);
   });
 
+  it("handles type names for fields", () => {
+    expect(parse(`time time`)).toEqual([
+      {
+        definitions: [
+          {
+            name: "time",
+            type: "time",
+            isArray: false,
+            isComplex: false,
+          },
+        ],
+        name: undefined,
+      },
+    ]);
+
+    expect(parse(`time time_ref`)).toEqual([
+      {
+        definitions: [
+          {
+            name: "time_ref",
+            type: "time",
+            isArray: false,
+            isComplex: false,
+          },
+        ],
+        name: undefined,
+      },
+    ]);
+
+    expect(
+      parse(`
+    true true
+    ============
+    MSG: custom/true
+    bool false
+    `),
+    ).toEqual([
+      {
+        definitions: [
+          {
+            name: "true",
+            type: "custom/true",
+            isArray: false,
+            isComplex: true,
+          },
+        ],
+        name: undefined,
+      },
+      {
+        definitions: [
+          {
+            name: "false",
+            type: "bool",
+            isArray: false,
+            isComplex: false,
+          },
+        ],
+        name: "custom/true",
+      },
+    ]);
+  });
+
   it("parses default values", () => {
     const messageDefinition = `
       int8 a 0

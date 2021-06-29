@@ -7,13 +7,7 @@ const lexer = moo.compile({
   '[': '[',
   ']': ']',
   assignment: /=[^\n]+/,
-  boolType: 'bool',
-  numericType: /byte|char|float32|float64|int8|uint8|int16|uint16|int32|uint32|int64|uint64/,
-  stringType: /string/,
-  timeType: /time|duration/,
-  true: /[Tt]rue/,
-  false: /[Ff]alse/,
-  fieldOrCustomType: /[a-zA-Z_]+(?:\/?[a-zA-Z0-9_]+)?/,
+  fieldOrType: /[a-zA-Z_]+(?:\/?[a-zA-Z0-9_]+)?/,
 });
 %}
 
@@ -33,15 +27,31 @@ main ->
 
 # Types
 
-boolType -> %boolType {% function(d) { return { type: d[0].value } } %}
+boolType -> "bool" {% function(d) { return { type: d[0].value } } %}
 
-numericType -> %numericType {% function(d) { return { type: d[0].value } } %}
+numericType ->
+   ("byte"
+  | "char"
+  | "float32"
+  | "float64"
+  | "int8"
+  | "uint8"
+  | "int16"
+  | "uint16"
+  | "int32"
+  | "uint32"
+  | "int64"
+  | "uint64") {% function(d) { return { type: d[0][0].value } } %}
 
-stringType -> %stringType {% function(d) { return { type: d[0].value } } %}
+stringType -> "string" {% function(d) { return { type: d[0].value } } %}
 
-timeType -> %timeType {% function(d) { return { type: d[0].value } } %}
+timeType -> ("time" | "duration") {% function(d) { return { type: d[0][0].value } } %}
 
-customType -> %fieldOrCustomType {% function(d) { return { type: d[0].value } } %}
+customType -> %fieldOrType {% function(d, _, reject) {
+  const type = d[0].value;
+  if (type.match(/^bool$|^byte$|^char$|^float32$|^float64$|^int8$|^uint8$|^int16$|^uint16$|^int32$|^uint32$|^int64$|^uint64$|^string$|^time$|^duration$/) != undefined) return reject;
+  return { type };
+} %}
 
 arrayType ->
     "[" _ "]" {% function(d) { return { isArray: true } } %}
@@ -50,7 +60,7 @@ arrayType ->
 
 # Fields
 
-field -> %fieldOrCustomType {% function(d, _, reject) {
+field -> %fieldOrType {% function(d, _, reject) {
   const name = d[0].value;
   if (name.match(/^[a-zA-Z](?:_?[a-zA-Z0-9]+)*$/) == undefined) return reject;
   return { name };
