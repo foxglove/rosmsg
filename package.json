@@ -1,6 +1,6 @@
 {
   "name": "@foxglove/rosmsg",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "ROS1 and ROS2 message definition parser",
   "license": "MIT",
   "keywords": [
