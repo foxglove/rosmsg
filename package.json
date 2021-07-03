@@ -3,6 +3,10 @@
   "version": "0.1.2",
   "description": "ROS1 and ROS2 message definition parser",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/foxglove/rosmsg.git"
+  },
   "keywords": [
     "ros",
     "ros1",
