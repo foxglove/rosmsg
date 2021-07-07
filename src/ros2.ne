@@ -49,10 +49,14 @@ numericType ->
 
 stringType -> ("wstring" | "string") upperBound:? {% function(d) { return { type: d[0][0].value, upperBound: d[1] ?? undefined } } %}
 
-timeType -> ("time" | "duration") {% function(d) { return { type: d[0][0].value } } %}
+timeType -> ("time" | "duration" | "builtin_interfaces/Time" | "builtin_interfaces/Duration") {% function(d) {
+  const parts = d[0][0].value.split("/");
+  const type = parts[parts.length - 1].toLowerCase();
+  return { type };
+} %}
 
 customType -> %fieldOrType {% function(d, _, reject) {
-  const PRIMITIVE_TYPES = ["bool", "byte", "char", "float32", "float64", "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "string", "wstring", "time", "duration"];
+  const PRIMITIVE_TYPES = ["bool", "byte", "char", "float32", "float64", "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "string", "wstring", "time", "duration", "builtin_interfaces/Time", "builtin_interfaces/Duration"];
   const type = d[0].value;
   if (PRIMITIVE_TYPES.includes(type)) return reject;
   return { type };
