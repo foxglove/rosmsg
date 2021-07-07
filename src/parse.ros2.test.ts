@@ -508,7 +508,6 @@ string function
 # The line in the file the message came from.
 uint32 line`;
     const types = parse(messageDefinition, { ros2: true });
-    console.log(JSON.stringify(types, null, 2));
     expect(types).toEqual([
       {
         definitions: [
