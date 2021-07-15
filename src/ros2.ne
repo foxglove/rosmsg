@@ -123,7 +123,7 @@ singleQuotedString -> %singleQuotedString {% function(d) {
   // Unescape escaped single quotes
   input = input.replace(/\\'/g, `'`);
   // Escape unescaped double quotes
-  input = input.replace(/(?<!\\)"/g, `\\"`);
+  input = input.replace(/(^|[^\\])"/g, `$1\\"`);
   // Add wrapping double quotes
   input = `"${input}"`;
   return JSON.parse(input);

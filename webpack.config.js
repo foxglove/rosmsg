@@ -11,6 +11,9 @@ module.exports = {
   resolve: {
     extensions: [".js", ".ts", ".jsx", ".tsx", ".ne"],
   },
+  optimization: {
+    minimize: false,
+  },
   module: {
     rules: [
       { test: /\.ne$/, loader: "nearley-loader" },
