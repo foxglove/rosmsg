@@ -218,6 +218,7 @@ describe("parseMessageDefinition", () => {
       bool someBoolean = 0
       string fooStr = Foo    ${""}
       string EXAMPLE="#comments" are ignored, and leading and trailing whitespace removed
+      uint64 SMOOTH_MOVE_START    = 0000000000000001 # e.g. kobuki_msgs/VersionInfo
     `;
     const types = parse(messageDefinition);
     expect(types).toEqual([
@@ -258,6 +259,12 @@ describe("parseMessageDefinition", () => {
             type: "string",
             isConstant: true,
             value: '"#comments" are ignored, and leading and trailing whitespace removed',
+          },
+          {
+            name: "SMOOTH_MOVE_START",
+            type: "uint64",
+            isConstant: true,
+            value: 1,
           },
         ],
         name: undefined,
