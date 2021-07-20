@@ -21,8 +21,8 @@
     "grammar"
   ],
   "author": {
-    "name": "Foxglove Technologies",
-    "email": "support@foxglove.dev"
+    "name": "Foxglove Technologies Inc",
+    "email": "contact@foxglove.dev"
   },
   "homepage": "https://github.com/foxglove/rosmsg",
   "main": "dist/index.js",
