@@ -65,7 +65,7 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Ro
   // Fix up complex type names
   types.forEach(({ definitions }) => {
     definitions.forEach((definition) => {
-      if (definition.isComplex) {
+      if (definition.isComplex === true) {
         const foundName = findTypeByName(types, definition.type).name;
         if (foundName == undefined) {
           throw new Error(`Missing type definition for ${definition.type}`);
