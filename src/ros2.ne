@@ -11,7 +11,7 @@ const lexer = moo.compile({
   ',': ',',
   '=': '=',
   '<=': '<=',
-  fieldOrType: /[a-zA-Z][a-zA-Z0-9_]*(?:\/?[a-zA-Z][a-zA-Z0-9_]*)?/,
+  fieldOrType: /[a-zA-Z][a-zA-Z0-9_]*(?:\/[a-zA-Z][a-zA-Z0-9_]*)?/,
 });
 %}
 
