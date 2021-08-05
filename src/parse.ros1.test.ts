@@ -360,4 +360,24 @@ describe("parseMessageDefinition", () => {
       },
     ]);
   });
+
+  it("allows numbers in package names", () => {
+    expect(
+      parse(`
+    abc1/Foo2 value0
+    ==========
+    MSG: abc1/Foo2
+    int32 data
+    `),
+    ).toEqual([
+      {
+        definitions: [{ isArray: false, isComplex: true, name: "value0", type: "abc1/Foo2" }],
+        name: undefined,
+      },
+      {
+        definitions: [{ isArray: false, isComplex: false, name: "data", type: "int32" }],
+        name: "abc1/Foo2",
+      },
+    ]);
+  });
 });
