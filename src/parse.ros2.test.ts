@@ -610,4 +610,164 @@ uint32 line`;
       },
     ]);
   });
+
+  it("handles type names with 3 components", () => {
+    expect(
+      parse(
+        `
+std_msgs/msg/Header header
+rosbridge_msgs/msg/ConnectedClient[] clients
+
+================================================================================
+MSG: rosbridge_msgs/msg/ConnectedClient
+string ip_address
+builtin_interfaces/Time connection_time
+
+================================================================================
+MSG: std_msgs/msg/Header
+builtin_interfaces/msg/Time stamp
+string frame_id
+    `,
+        { ros2: true },
+      ),
+    ).toEqual([
+      {
+        definitions: [
+          {
+            isArray: false,
+            isComplex: true,
+            name: "header",
+            type: "std_msgs/msg/Header",
+          },
+          {
+            isArray: true,
+            isComplex: true,
+            name: "clients",
+            type: "rosbridge_msgs/msg/ConnectedClient",
+          },
+        ],
+        name: undefined,
+      },
+      {
+        definitions: [
+          {
+            isArray: false,
+            isComplex: false,
+            name: "ip_address",
+            type: "string",
+            upperBound: undefined,
+          },
+          {
+            isArray: false,
+            isComplex: false,
+            name: "connection_time",
+            type: "time",
+          },
+        ],
+        name: "rosbridge_msgs/msg/ConnectedClient",
+      },
+      {
+        definitions: [
+          {
+            isArray: false,
+            isComplex: false,
+            name: "stamp",
+            type: "time",
+          },
+          {
+            isArray: false,
+            isComplex: false,
+            name: "frame_id",
+            type: "string",
+            upperBound: undefined,
+          },
+        ],
+        name: "std_msgs/msg/Header",
+      },
+    ]);
+  });
+
+  it("handles bounded arrays", () => {
+    expect(
+      parse(
+        // From https://docs.ros.org/en/galactic/Concepts/About-ROS-Interfaces.html
+        `
+int32[] unbounded_integer_array
+int32[5] five_integers_array
+int32[<=5] up_to_five_integers_array
+
+string string_of_unbounded_size
+string<=10 up_to_ten_characters_string
+
+string[<=5] up_to_five_unbounded_strings
+string<=10[] unbounded_array_of_string_up_to_ten_characters_each
+string<=10[<=5] up_to_five_strings_up_to_ten_characters_each
+`,
+        { ros2: true },
+      ),
+    ).toEqual([
+      {
+        definitions: [
+          {
+            isArray: true,
+            isComplex: false,
+            name: "unbounded_integer_array",
+            type: "int32",
+          },
+          {
+            arrayLength: 5,
+            isArray: true,
+            isComplex: false,
+            name: "five_integers_array",
+            type: "int32",
+          },
+          {
+            arrayUpperBound: 5,
+            isArray: true,
+            isComplex: false,
+            name: "up_to_five_integers_array",
+            type: "int32",
+          },
+          {
+            isArray: false,
+            isComplex: false,
+            name: "string_of_unbounded_size",
+            type: "string",
+            upperBound: undefined,
+          },
+          {
+            isArray: false,
+            isComplex: false,
+            name: "up_to_ten_characters_string",
+            type: "string",
+            upperBound: 10,
+          },
+          {
+            arrayUpperBound: 5,
+            isArray: true,
+            isComplex: false,
+            name: "up_to_five_unbounded_strings",
+            type: "string",
+            upperBound: undefined,
+          },
+          {
+            isArray: true,
+            isComplex: false,
+            name: "unbounded_array_of_string_up_to_ten_characters_each",
+            type: "string",
+            upperBound: 10,
+          },
+          {
+            arrayUpperBound: 5,
+            isArray: true,
+            isComplex: false,
+            name: "up_to_five_strings_up_to_ten_characters_each",
+            type: "string",
+            upperBound: 10,
+          },
+        ],
+        name: undefined,
+      },
+    ]);
+  });
 });

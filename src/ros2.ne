@@ -11,7 +11,7 @@ const lexer = moo.compile({
   ',': ',',
   '=': '=',
   '<=': '<=',
-  fieldOrType: /[a-zA-Z][a-zA-Z0-9_]*(?:\/[a-zA-Z][a-zA-Z0-9_]*)?/,
+  fieldOrType: /[a-zA-Z][a-zA-Z0-9_]*(?:\/[a-zA-Z][a-zA-Z0-9_]*){0,2}/,
 });
 %}
 
@@ -49,14 +49,36 @@ numericType ->
 
 stringType -> ("wstring" | "string") upperBound:? {% function(d) { return { type: d[0][0].value, upperBound: d[1] ?? undefined } } %}
 
-timeType -> ("time" | "duration" | "builtin_interfaces/Time" | "builtin_interfaces/Duration") {% function(d) {
+timeType -> ("time" | "duration" | "builtin_interfaces/Time" | "builtin_interfaces/Duration" | "builtin_interfaces/msg/Time" | "builtin_interfaces/msg/Duration") {% function(d) {
   const parts = d[0][0].value.split("/");
   const type = parts[parts.length - 1].toLowerCase();
   return { type };
 } %}
 
 customType -> %fieldOrType {% function(d, _, reject) {
-  const PRIMITIVE_TYPES = ["bool", "byte", "char", "float32", "float64", "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "string", "wstring", "time", "duration", "builtin_interfaces/Time", "builtin_interfaces/Duration"];
+  const PRIMITIVE_TYPES = [
+    "bool",
+    "byte",
+    "char",
+    "float32",
+    "float64",
+    "int8",
+    "uint8",
+    "int16",
+    "uint16",
+    "int32",
+    "uint32",
+    "int64",
+    "uint64",
+    "string",
+    "wstring",
+    "time",
+    "duration",
+    "builtin_interfaces/Time",
+    "builtin_interfaces/Duration",
+    "builtin_interfaces/msg/Time",
+    "builtin_interfaces/msg/Duration",
+  ];
   const type = d[0].value;
   if (PRIMITIVE_TYPES.includes(type)) return reject;
   return { type };
