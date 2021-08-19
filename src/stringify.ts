@@ -40,7 +40,7 @@ export function stringify(msgDefs: RosMsgDefinition[]): string {
     }
   }
 
-  return output;
+  return output.trimEnd();
 }
 
 function stringifyDefaultValue(value: string | number | boolean | number[] | boolean[]): string {
