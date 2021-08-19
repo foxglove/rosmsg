@@ -26,8 +26,13 @@ export function stringify(msgDefs: RosMsgDefinition[]): string {
       }
       for (const def of variables) {
         const upperBound = def.upperBound != undefined ? `<=${def.upperBound}` : "";
-        const arrayUpperBound = def.arrayUpperBound != undefined ? `<=${def.arrayUpperBound}` : "";
-        const array = def.isArray === true ? `[${arrayUpperBound}]` : "";
+        const arrayLength =
+          def.arrayLength != undefined
+            ? String(def.arrayLength)
+            : def.arrayUpperBound != undefined
+            ? `<=${def.arrayUpperBound}`
+            : "";
+        const array = def.isArray === true ? `[${arrayLength}]` : "";
         const defaultValue =
           def.defaultValue != undefined ? ` ${stringifyDefaultValue(def.defaultValue)}` : "";
         output += `${def.type}${upperBound}${array} ${def.name}${defaultValue}\n`;
