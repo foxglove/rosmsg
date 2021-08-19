@@ -76,24 +76,25 @@ constantField -> [a-zA-Z0-9_]:+ {% function(d, _, reject) {
 # Constant Values
 
 boolConstantValue -> assignment {% function(d, _, reject) {
-  const value = d[0];
-  if (value.toLowerCase() === "true" || value.toLowerCase() === "1") return { value: true };
-  if (value.toLowerCase() === "false" || value.toLowerCase() === "0") return { value: false };
+  const valueText = d[0].split("#")[0].trim();
+  if (valueText === "True" || valueText === "1") return { value: true, valueText };
+  if (valueText === "False" || valueText === "0") return { value: false, valueText };
   return reject;
 } %}
 
 numericConstantValue -> assignment {% function(d, _, reject) {
-  const value = parseFloat(d[0]);
-  return !isNaN(value) ? { value } : reject;
+  const valueText = d[0].split("#")[0].trim();
+  const value = parseFloat(valueText);
+  return !isNaN(value) ? { value, valueText } : reject;
 } %}
 
-stringConstantValue -> assignment {% function(d) { return { value: d[0] } } %}
+stringConstantValue -> assignment {% function(d) { return { value: d[0], valueText: d[0] } } %}
 
 # Basic Tokens
 
 bool ->
-    ("true" | "True" | "1") {% function(d) { return true } %}
-  | ("false" | "False" | "0") {% function(d) { return false } %}
+    ("True" | "1") {% function(d) { return true } %}
+  | ("False" | "0") {% function(d) { return false } %}
 
 number -> %number {% function(d) { return parseFloat(d[0].value) } %}
 

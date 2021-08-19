@@ -18,7 +18,7 @@ export function stringify(msgDefs: RosMsgDefinition[]): string {
     }
 
     for (const def of constants) {
-      output += `${def.type} ${def.name} = ${String(def.value)}\n`;
+      output += `${def.type} ${def.name} = ${def.valueText ?? String(def.value)}\n`;
     }
     if (variables.length > 0) {
       if (output.length > 0) {
@@ -26,8 +26,13 @@ export function stringify(msgDefs: RosMsgDefinition[]): string {
       }
       for (const def of variables) {
         const upperBound = def.upperBound != undefined ? `<=${def.upperBound}` : "";
-        const arrayUpperBound = def.arrayUpperBound != undefined ? `<=${def.arrayUpperBound}` : "";
-        const array = def.isArray === true ? `[${arrayUpperBound}]` : "";
+        const arrayLength =
+          def.arrayLength != undefined
+            ? String(def.arrayLength)
+            : def.arrayUpperBound != undefined
+            ? `<=${def.arrayUpperBound}`
+            : "";
+        const array = def.isArray === true ? `[${arrayLength}]` : "";
         const defaultValue =
           def.defaultValue != undefined ? ` ${stringifyDefaultValue(def.defaultValue)}` : "";
         output += `${def.type}${upperBound}${array} ${def.name}${defaultValue}\n`;
@@ -35,7 +40,7 @@ export function stringify(msgDefs: RosMsgDefinition[]): string {
     }
   }
 
-  return output;
+  return output.trimEnd();
 }
 
 function stringifyDefaultValue(value: string | number | boolean | number[] | boolean[]): string {

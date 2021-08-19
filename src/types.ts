@@ -21,6 +21,7 @@ export type RosMsgField = {
   // For constants
   isConstant?: boolean;
   value?: string | number | boolean | undefined;
+  valueText?: string;
 
   // Sets a maximum upper bound on string length
   upperBound?: number;
