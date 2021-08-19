@@ -10,6 +10,7 @@ const md5Tests: Md5Test[] = [
   ["Int8FixedArray", "int8[7] data", "2868efa54c3e6c80cd3e096af5102940"],
   ["BoolFalseConstant", "bool A=False", "d3011fbf97518e43e51a9ef7f5f352f1"],
   ["BoolZeroConstant", "bool A=0", "8a08473e3b7d762244201aa8a3f42ed9"],
+  ["Int64WeirdConstant", "int64 A = 0000000000000001", "b3264adb244f3230420d804c5ed3b417"],
   ["ConstantAndField", "bool data\nint32 A=1", "9c4674e31b60282f7c0f4c41b0147d3c"],
   [
     "Unformatted",

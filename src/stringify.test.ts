@@ -10,6 +10,7 @@ describe("stringify", () => {
       float32 baz= \t -32.25
       bool someBoolean = 0
       Point[] points
+      int64 A = 0000000000000001
       string fooStr = Foo    ${""}
       string EXAMPLE="#comments" are ignored, and leading and trailing whitespace removed
       ============
@@ -22,7 +23,8 @@ describe("stringify", () => {
     expect(output).toEqual(`uint32 foo = 55
 int32 bar = -11
 float32 baz = -32.25
-bool someBoolean = false
+bool someBoolean = 0
+int64 A = 0000000000000001
 string fooStr = Foo
 string EXAMPLE = "#comments" are ignored, and leading and trailing whitespace removed
 

@@ -18,7 +18,7 @@ export function stringify(msgDefs: RosMsgDefinition[]): string {
     }
 
     for (const def of constants) {
-      output += `${def.type} ${def.name} = ${String(def.value)}\n`;
+      output += `${def.type} ${def.name} = ${def.valueText ?? String(def.value)}\n`;
     }
     if (variables.length > 0) {
       if (output.length > 0) {
