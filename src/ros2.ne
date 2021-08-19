@@ -106,11 +106,11 @@ constantField -> [A-Z0-9_]:+ {% function(d, _, reject) {
 
 # Constant Values
 
-boolConstantValue -> bool {% function(d) { return { value: d[0] } } %}
+boolConstantValue -> bool {% function(d) { return { value: d[0], valueText: d[0] ? "1" : "0" } } %}
 
-numericConstantValue -> number {% function(d) { return { value: d[0] } } %}
+numericConstantValue -> number {% function(d) { return { value: d[0], valueText: String(d[0]) } } %}
 
-stringConstantValue -> (doubleQuotedString | singleQuotedString) {% function(d) { return { value: d[0][0] } } %}
+stringConstantValue -> (doubleQuotedString | singleQuotedString) {% function(d) { return { value: d[0][0], valueText: d[0][0] } } %}
 
 # Default Values
 
