@@ -32,8 +32,7 @@ geometry_msgs/Point[] points
 ================================================================================
 MSG: geometry_msgs/Point
 
-float64 x
-`);
+float64 x`);
   });
 
   it("supports ROS2 features", () => {
@@ -79,7 +78,6 @@ uint64 k 5000000000
 string my_string1 "I heard \\"Hello\\""
 string my_string2 "I heard 'Hello'"
 string my_string3 "I heard 'Hello'"
-string my_string4 "I heard \\"Hello\\""
-`);
+string my_string4 "I heard \\"Hello\\""`);
   });
 });
