@@ -2,6 +2,8 @@
 
 > _ROS1 and ROS2 message definition parser_
 
+[![npm version](https://img.shields.io/npm/v/@foxglove/rosmsg.svg?style=flat)](https://www.npmjs.com/package/@foxglove/rosmsg)
+
 ## Introduction
 
 [The Robot Operating System (ROS)](https://www.ros.org/) defines a simplified message description language for describing data types. This library parses those message definitions and can round trip them back into a canonical string format suitable for checksum generation. The parsed definitions are useful for serialization or deserialization when paired with other libraries.
