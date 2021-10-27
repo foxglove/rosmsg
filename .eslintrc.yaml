@@ -9,6 +9,7 @@ plugins:
 
 extends:
   - plugin:@foxglove/base
+  - plugin:@foxglove/jest
 
 overrides:
   - files: ["*.ts", "*.tsx"]

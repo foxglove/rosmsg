@@ -28,6 +28,41 @@ describe("parseMessageDefinition", () => {
     ]);
   });
 
+  it("rejects valid tokens that don't fully match a parser rule", () => {
+    expect(() => parse("abc")).toThrow("Could not parse line: 'abc'");
+  });
+
+  it.each(["_a", "3a"])("rejects invalid field name %s", (name) => {
+    expect(() => parse(`string ${name}`)).toThrow();
+  });
+  it.each(["3a"])("rejects invalid constant name %s", (name) => {
+    expect(() => parse(`string ${name} = 'x'`)).toThrow();
+  });
+  it.each(["a", "a_", "foo_bar", "foo__bar", "foo1_2bar"])(
+    "accepts valid field name %s",
+    (name) => {
+      expect(parse(`string ${name}`)).toEqual([
+        {
+          definitions: [
+            { arrayLength: undefined, isArray: false, isComplex: false, name, type: "string" },
+          ],
+          name: undefined,
+        },
+      ]);
+    },
+  );
+  it.each(["a", "_a", "a_", "foo_bar", "foo__Bar", "FOO1_2BAR"])(
+    "accepts valid constant name %s",
+    (name) => {
+      expect(parse(`string ${name} = x`)).toEqual([
+        {
+          definitions: [{ name, type: "string", isConstant: true, value: "x", valueText: "x" }],
+          name: undefined,
+        },
+      ]);
+    },
+  );
+
   it("resolves unqualified names", () => {
     const messageDefinition = `
       Point[] points

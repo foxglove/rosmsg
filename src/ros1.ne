@@ -7,7 +7,10 @@ const lexer = moo.compile({
   '[': '[',
   ']': ']',
   assignment: /=[^\n]+/,
-  fieldOrType: /[a-zA-Z][a-zA-Z0-9_]*(?:\/[a-zA-Z][a-zA-Z0-9_]*)?/,
+  // Leading underscores are disallowed in field names, while constant names have no explicit restrictions.
+  // So we are more lenient in lexing here, and the validation steps below are more strict.
+  // See: https://github.com/ros/genmsg/blob/7d8b6ce6f43b6e39ea8261125d270f2d3062356f/src/genmsg/msg_loader.py#L188-L238
+  fieldOrType: /[a-zA-Z_][a-zA-Z0-9_]*(?:\/[a-zA-Z][a-zA-Z0-9_]*)?/,
 });
 %}
 
@@ -63,12 +66,15 @@ arrayType ->
 
 field -> %fieldOrType {% function(d, _, reject) {
   const name = d[0].value;
-  if (name.match(/^[a-zA-Z](?:_?[a-zA-Z0-9]+)*$/) == undefined) return reject;
+  // Leading underscores or digits are not allowed in field names
+  if (name.match(/^[a-zA-Z][a-zA-Z0-9_]*$/) == undefined) return reject;
   return { name };
 } %}
 
-constantField -> [a-zA-Z0-9_]:+ {% function(d, _, reject) {
-  const name = d[0][0].value;
+constantField -> %fieldOrType {% function(d, _, reject) {
+  const name = d[0].value;
+  // Leading digits are not allowed in constant names (the ROS genmsg parser
+  // allows them, but loading the generated Python code fails later)
   if (name.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/) == undefined) return reject;
   return { name, isConstant: true };
 } %}

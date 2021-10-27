@@ -90,7 +90,13 @@ function buildType(lines: { line: string }[], grammar: Grammar): RosMsgDefinitio
 
     const parser = new Parser(grammar);
     parser.feed(line);
-    const result = parser.results[0] as RosMsgField;
+    const results = parser.finish();
+    if (results.length === 0) {
+      throw new Error(`Could not parse line: '${line}'`);
+    } else if (results.length > 1) {
+      throw new Error(`Ambiguous line: '${line}'`);
+    }
+    const result = results[0] as RosMsgField;
     if (result != undefined) {
       result.type = normalizeType(result.type);
       definitions.push(result);
