@@ -98,9 +98,9 @@ field -> %fieldOrType {% function(d, _, reject) {
   return { name };
 } %}
 
-constantField -> [A-Z0-9_]:+ {% function(d, _, reject) {
-  const name = d[0][0].value;
-  if (name.match(/^[A-Z_][A-Z0-9_]*$/) == undefined) return reject;
+constantField -> %fieldOrType {% function(d, _, reject) {
+  const name = d[0].value;
+  if (name.match(/^[A-Z](?:_?[A-Z0-9]+)*$/) == undefined) return reject;
   return { name, isConstant: true };
 } %}
 
