@@ -63,7 +63,7 @@ arrayType ->
 
 field -> %fieldOrType {% function(d, _, reject) {
   const name = d[0].value;
-  if (name.match(/^[a-zA-Z](?:_?[a-zA-Z0-9]+)*$/) == undefined) return reject;
+  if (name.match(/^[a-zA-Z](?:_?[a-zA-Z0-9_]+)*$/) == undefined) return reject;
   return { name };
 } %}
 
