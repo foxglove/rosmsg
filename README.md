@@ -33,6 +33,7 @@ float64 z
 float64 w`;
 
 const messageDefinition = parse(definitionStr);
+const messageDefinition = parse(definitionStr, {ros2: true}); // for ROS 2 definitions
 
 // stringify(messageDefinition) will return a canonical string, similar to
 // _definitionStr_
