@@ -32,6 +32,8 @@ describe("parseMessageDefinition", () => {
     [`[a,b]`, ["a", "b"]],
     [`[a,b]#`, ["a", "b"]],
     [`[a,'b#c']`, ["a", "b#c"]],
+    [`#comment`, undefined],
+    [` #comment`, undefined],
   ])("parses array default value %s", (literal, value) => {
     expect(parse(`string[] name ${literal}`, { ros2: true })).toEqual([
       {

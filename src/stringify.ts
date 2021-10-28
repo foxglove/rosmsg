@@ -49,5 +49,5 @@ function stringifyDefaultValue(value: RosDefaultValue): string {
       .map((x) => (typeof x === "bigint" ? x.toString() : JSON.stringify(x)))
       .join(", ")}]`;
   }
-  return JSON.stringify(value);
+  return typeof value === "bigint" ? value.toString() : JSON.stringify(value);
 }
