@@ -441,6 +441,7 @@ describe("parseMessageDefinition", () => {
       string j '"hello"'
       string k "\\"hello\\""
       string l '\\'hello\\''
+      string m hello
     `;
     const types = parse(messageDefinition, { ros2: true });
     expect(types).toEqual([
@@ -527,6 +528,13 @@ describe("parseMessageDefinition", () => {
             name: "l",
             type: "string",
             defaultValue: "'hello'",
+            isArray: false,
+            isComplex: false,
+          },
+          {
+            name: "m",
+            type: "string",
+            defaultValue: "hello",
             isArray: false,
             isComplex: false,
           },
