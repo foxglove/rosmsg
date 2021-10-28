@@ -16,7 +16,7 @@ const CONSTANT_ASSIGNMENT = String.raw`\s*=\s*(?<constantValue>${COMMENT_TERMINA
 const DEFAULT_VALUE_ARRAY = String.raw`\[(?:${ARRAY_TERMINATED_LITERAL},)*${ARRAY_TERMINATED_LITERAL}?\]`;
 const DEFAULT_VALUE = String.raw`(?<defaultValue>${DEFAULT_VALUE_ARRAY}|${COMMENT_TERMINATED_LITERAL})`;
 const COMMENT = String.raw`(?:#.*)`;
-const DEFINITION_LINE = String.raw`^${TYPE}${STRING_BOUND}?${ARRAY_BOUND}?\s+${NAME}(?:${CONSTANT_ASSIGNMENT}|\s+${DEFAULT_VALUE})??\s*${COMMENT}?$`;
+const DEFINITION_LINE = String.raw`^${TYPE}${STRING_BOUND}?${ARRAY_BOUND}?\s+${NAME}(?:${CONSTANT_ASSIGNMENT}|\s+${DEFAULT_VALUE})?\s*${COMMENT}?$`;
 
 const STRING_ESCAPES = String.raw`\\(?<char>['"abfnrtv\\])|\\(?<oct>[0-7]{1,3})|\\x(?<hex2>[a-fA-F0-9]{2})|\\u(?<hex4>[a-fA-F0-9]{4})|\\U(?<hex8>[a-fA-F0-9]{8})`;
 
