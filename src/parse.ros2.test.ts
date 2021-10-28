@@ -51,7 +51,7 @@ describe("parseMessageDefinition", () => {
   it.each(["A", "A_B", "FOO1_2BAR"])("accepts valid constant name %s", (name) => {
     expect(parse(`string ${name} = 'x'`, { ros2: true })).toEqual([
       {
-        definitions: [{ name, type: "string", isConstant: true, value: "x", valueText: "x" }],
+        definitions: [{ name, type: "string", isConstant: true, value: "x", valueText: "'x'" }],
         name: undefined,
       },
     ]);
@@ -274,14 +274,14 @@ describe("parseMessageDefinition", () => {
             type: "string",
             isConstant: true,
             value: "Foo",
-            valueText: "Foo",
+            valueText: "'Foo'",
           },
           {
             name: "EXAMPLE",
             type: "string",
             isConstant: true,
             value: "#comments",
-            valueText: "#comments",
+            valueText: '"#comments"',
           },
         ],
         name: undefined,
@@ -303,14 +303,14 @@ describe("parseMessageDefinition", () => {
             type: "bool",
             isConstant: true,
             value: true,
-            valueText: "1", // This should be "True" (https://github.com/foxglove/rosmsg/issues/13)
+            valueText: "True",
           },
           {
             name: "DEAD",
             type: "bool",
             isConstant: true,
             value: false,
-            valueText: "0", // This should be "False" (https://github.com/foxglove/rosmsg/issues/13)
+            valueText: "False",
           },
         ],
         name: undefined,

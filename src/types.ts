@@ -7,7 +7,16 @@
 //   found at http://www.apache.org/licenses/LICENSE-2.0
 //   You may not use this file except in compliance with the License.
 
-export type RosDefaultValue = string | number | boolean | number[] | boolean[] | undefined;
+export type RosDefaultValue =
+  | string
+  | number
+  | bigint
+  | boolean
+  | string[]
+  | number[]
+  | bigint[]
+  | boolean[]
+  | undefined;
 
 export type RosMsgField = {
   type: string;
@@ -20,7 +29,7 @@ export type RosMsgField = {
 
   // For constants
   isConstant?: boolean;
-  value?: string | number | boolean | undefined;
+  value?: string | number | bigint | boolean | undefined;
   valueText?: string;
 
   // Sets a maximum upper bound on string length
