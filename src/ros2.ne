@@ -107,7 +107,7 @@ constantField -> %fieldOrType {% function(d, _, reject) {
 
 # Constant Values
 
-boolConstantValue -> bool {% function(d) { return { value: d[0], valueText: d[0] ? "1" : "0" } } %}
+boolConstantValue -> bool {% function(d) { return { value: d[0][0], valueText: d[0][1] } } %}
 
 numericConstantValue -> number {% function(d) { return { value: d[0], valueText: String(d[0]) } } %}
 
@@ -115,7 +115,7 @@ stringConstantValue -> (doubleQuotedString | singleQuotedString | unQuotedString
 
 # Default Values
 
-boolDefaultValue -> __ (bool | boolArray) {% function(d) { return { defaultValue: d[1][0] } } %}
+boolDefaultValue -> __ (bool | boolArray) {% function(d) { return { defaultValue: d[1][0][0] } } %}
 
 numericDefaultValue -> __ (number | numberArray) {% function(d) { return { defaultValue: d[1][0] } } %}
 
@@ -132,8 +132,8 @@ numberArray ->
 # Basic Tokens
 
 bool ->
-    ("true" | "True" | "1") {% function(d) { return true } %}
-  | ("false" | "False" | "0") {% function(d) { return false } %}
+    ("true" | "True" | "1") {% function(d) { return [true, d[0][0].text] } %}
+  | ("false" | "False" | "0") {% function(d) { return [false, d[0][0].text] } %}
 
 number -> %number {% function(d) { return parseFloat(d[0].value) } %}
 

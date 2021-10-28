@@ -327,14 +327,14 @@ describe("parseMessageDefinition", () => {
             type: "bool",
             isConstant: true,
             value: true,
-            valueText: "1", // This should be "True" (https://github.com/foxglove/rosmsg/issues/13)
+            valueText: "True",
           },
           {
             name: "DEAD",
             type: "bool",
             isConstant: true,
             value: false,
-            valueText: "0", // This should be "False" (https://github.com/foxglove/rosmsg/issues/13)
+            valueText: "False",
           },
         ],
         name: undefined,
