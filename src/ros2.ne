@@ -11,7 +11,7 @@ const lexer = moo.compile({
   ',': ',',
   '=': '=',
   '<=': '<=',
-  fieldOrType: /[a-zA-Z][a-zA-Z0-9_]*(?:\/[a-zA-Z][a-zA-Z0-9_]*){0,2}/,
+  fieldOrTypeOrUnquotedString: /[a-zA-Z][a-zA-Z0-9_]*(?:\/[a-zA-Z][a-zA-Z0-9_]*){0,2}/,
 });
 %}
 
@@ -55,7 +55,7 @@ timeType -> ("time" | "duration" | "builtin_interfaces/Time" | "builtin_interfac
   return { type };
 } %}
 
-customType -> %fieldOrType {% function(d, _, reject) {
+customType -> %fieldOrTypeOrUnquotedString {% function(d, _, reject) {
   const PRIMITIVE_TYPES = [
     "bool",
     "byte",
@@ -92,13 +92,13 @@ arrayType ->
 
 # Fields
 
-field -> %fieldOrType {% function(d, _, reject) {
+field -> %fieldOrTypeOrUnquotedString {% function(d, _, reject) {
   const name = d[0].value;
   if (name.match(/^[a-z](?:_?[a-z0-9]+)*$/) == undefined) return reject;
   return { name };
 } %}
 
-constantField -> %fieldOrType {% function(d, _, reject) {
+constantField -> %fieldOrTypeOrUnquotedString {% function(d, _, reject) {
   const name = d[0].value;
   if (name.match(/^[A-Z](?:_?[A-Z0-9]+)*$/) == undefined) return reject;
   return { name, isConstant: true };
@@ -110,7 +110,7 @@ boolConstantValue -> bool {% function(d) { return { value: d[0], valueText: d[0]
 
 numericConstantValue -> number {% function(d) { return { value: d[0], valueText: String(d[0]) } } %}
 
-stringConstantValue -> (doubleQuotedString | singleQuotedString) {% function(d) { return { value: d[0][0], valueText: d[0][0] } } %}
+stringConstantValue -> (doubleQuotedString | singleQuotedString | unQuotedString) {% function(d) { return { value: d[0][0], valueText: d[0][0] } } %}
 
 # Default Values
 
@@ -118,7 +118,7 @@ boolDefaultValue -> __ (bool | boolArray) {% function(d) { return { defaultValue
 
 numericDefaultValue -> __ (number | numberArray) {% function(d) { return { defaultValue: d[1][0] } } %}
 
-stringDefaultValue -> __ (doubleQuotedString | singleQuotedString) {% function(d) { return { defaultValue: d[1][0] } } %}
+stringDefaultValue -> __ (doubleQuotedString | singleQuotedString | unQuotedString) {% function(d) { return { defaultValue: d[1][0] } } %}
 
 boolArray ->
     "[" _ "]" {% function(d) { return [] } %}
@@ -146,6 +146,13 @@ singleQuotedString -> %singleQuotedString {% function(d) {
   input = input.replace(/\\'/g, `'`);
   // Escape unescaped double quotes
   input = input.replace(/(^|[^\\])"/g, `$1\\"`);
+  // Add wrapping double quotes
+  input = `"${input}"`;
+  return JSON.parse(input);
+} %}
+
+unQuotedString -> %fieldOrTypeOrUnquotedString {% function(d,_, reject) {
+  let input = d[0].value;
   // Add wrapping double quotes
   input = `"${input}"`;
   return JSON.parse(input);

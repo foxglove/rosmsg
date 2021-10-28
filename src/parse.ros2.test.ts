@@ -236,6 +236,7 @@ describe("parseMessageDefinition", () => {
       bool SOME_BOOLEAN = 0
       string FOO_STR = 'Foo'    ${""}
       string EXAMPLE="#comments" # are handled properly
+      string UNQUOTED= Bar
     `;
     const types = parse(messageDefinition, { ros2: true });
     expect(types).toEqual([
@@ -282,6 +283,13 @@ describe("parseMessageDefinition", () => {
             isConstant: true,
             value: "#comments",
             valueText: "#comments",
+          },
+          {
+            name: "UNQUOTED",
+            type: "string",
+            isConstant: true,
+            value: "Bar",
+            valueText: 'Bar',
           },
         ],
         name: undefined,
