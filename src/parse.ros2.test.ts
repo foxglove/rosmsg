@@ -235,6 +235,7 @@ describe("parseMessageDefinition", () => {
       float32 BAZ= \t -32.25
       bool SOME_BOOLEAN = 0
       string FOO_STR = 'Foo'    ${""}
+      string EMPTY=
       string EXAMPLE="#comments" # are handled properly
     `;
     const types = parse(messageDefinition, { ros2: true });
@@ -275,6 +276,13 @@ describe("parseMessageDefinition", () => {
             isConstant: true,
             value: "Foo",
             valueText: "'Foo'",
+          },
+          {
+            name: "EMPTY",
+            type: "string",
+            isConstant: true,
+            value: "",
+            valueText: "",
           },
           {
             name: "EXAMPLE",
