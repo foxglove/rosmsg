@@ -237,6 +237,8 @@ describe("parseMessageDefinition", () => {
       string FOO_STR = 'Foo'    ${""}
       string EXAMPLE="#comments" # are handled properly
       string UNQUOTED= Bar
+      string UNQUOTEDSPACE = Bar Foo
+      string UNQUOTEDSPECIAL = afse_doi@f4!  :834$%G$%
     `;
     const types = parse(messageDefinition, { ros2: true });
     expect(types).toEqual([
@@ -290,6 +292,20 @@ describe("parseMessageDefinition", () => {
             isConstant: true,
             value: "Bar",
             valueText: 'Bar',
+          },
+          {
+            name: "UNQUOTEDSPACE",
+            type: "string",
+            isConstant: true,
+            value: "Bar Foo",
+            valueText: 'Bar Foo',
+          },
+          {
+            name: "UNQUOTEDSPECIAL",
+            type: "string",
+            isConstant: true,
+            value: "afse_doi@f4!  :834$%G$%",
+            valueText: "afse_doi@f4!  :834$%G$%",
           },
         ],
         name: undefined,

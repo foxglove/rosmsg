@@ -11,7 +11,8 @@ const lexer = moo.compile({
   ',': ',',
   '=': '=',
   '<=': '<=',
-  fieldOrTypeOrUnquotedString: /[a-zA-Z][a-zA-Z0-9_]*(?:\/[a-zA-Z][a-zA-Z0-9_]*){0,2}/,
+  fieldOrType: /[a-zA-Z][a-zA-Z0-9_]*(?:\/[a-zA-Z][a-zA-Z0-9_]*){0,2}/,
+  plainString: /(?:\S)+/,
 });
 %}
 
@@ -55,7 +56,7 @@ timeType -> ("time" | "duration" | "builtin_interfaces/Time" | "builtin_interfac
   return { type };
 } %}
 
-customType -> %fieldOrTypeOrUnquotedString {% function(d, _, reject) {
+customType -> %fieldOrType {% function(d, _, reject) {
   const PRIMITIVE_TYPES = [
     "bool",
     "byte",
@@ -92,13 +93,13 @@ arrayType ->
 
 # Fields
 
-field -> %fieldOrTypeOrUnquotedString {% function(d, _, reject) {
+field -> %fieldOrType {% function(d, _, reject) {
   const name = d[0].value;
   if (name.match(/^[a-z](?:_?[a-z0-9]+)*$/) == undefined) return reject;
   return { name };
 } %}
 
-constantField -> %fieldOrTypeOrUnquotedString {% function(d, _, reject) {
+constantField -> %fieldOrType {% function(d, _, reject) {
   const name = d[0].value;
   if (name.match(/^[A-Z](?:_?[A-Z0-9]+)*$/) == undefined) return reject;
   return { name, isConstant: true };
@@ -151,7 +152,27 @@ singleQuotedString -> %singleQuotedString {% function(d) {
   return JSON.parse(input);
 } %}
 
-unQuotedString -> %fieldOrTypeOrUnquotedString {% function(d,_, reject) {
+unQuotedString -> unQuotedWord %space:? unQuotedString:? {% function(d) {
+  let output = "";
+  for( let word of d ) {
+    if( word === null ) {
+      continue;
+      }
+    if( typeof(word) !== 'string' ) {
+      output += word.text;
+    }
+    else {
+      output += word;
+    }
+  }
+  return JSON.parse(`"${output}"`);
+} %}
+
+unQuotedWord -> %fieldOrType {% function(d) {
+  return d[0].value;
+} %}
+
+unQuotedWord -> %plainString {% function(d) {
   let input = d[0].value;
   // Add wrapping double quotes
   input = `"${input}"`;
