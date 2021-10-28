@@ -239,6 +239,9 @@ describe("parseMessageDefinition", () => {
       string UNQUOTED= Bar
       string UNQUOTEDSPACE = Bar Foo
       string UNQUOTEDSPECIAL = afse_doi@f4!  :834$%G$%
+      string BLANK=
+      string BLANKCOMMENT=# Blank with comment
+    #  string BLANKSPACECOMMENT= # Blank with comment after space
     `;
     const types = parse(messageDefinition, { ros2: true });
     expect(types).toEqual([
@@ -307,6 +310,27 @@ describe("parseMessageDefinition", () => {
             value: "afse_doi@f4!  :834$%G$%",
             valueText: "afse_doi@f4!  :834$%G$%",
           },
+          {
+            name: "BLANK",
+            type: "string",
+            isConstant: true,
+            value: "",
+            valueText: "",
+          },
+          {
+            name: "BLANKCOMMENT",
+            type: "string",
+            isConstant: true,
+            value: "",
+            valueText: "",
+          },
+          // {
+          //   name: "BLANKSPACECOMMENT",
+          //   type: "string",
+          //   isConstant: true,
+          //   value: "",
+          //   valueText: "",
+          // },
         ],
         name: undefined,
       },

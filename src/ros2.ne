@@ -12,7 +12,7 @@ const lexer = moo.compile({
   '=': '=',
   '<=': '<=',
   fieldOrType: /[a-zA-Z][a-zA-Z0-9_]*(?:\/[a-zA-Z][a-zA-Z0-9_]*){0,2}/,
-  plainString: /(?:\S)+/,
+  plainString: /[^#\s\n][^\s\n]*/,
 });
 %}
 
@@ -26,7 +26,10 @@ main ->
   | _ customType arrayType __ field _ comment:? complex {% function(d) { return extend(d) } %}
   | _ boolType __ constantField _ assignment _ boolConstantValue _ comment:? {% function(d) { return extend(d) } %}
   | _ numericType __ constantField _ assignment _ numericConstantValue _ comment:? {% function(d) { return extend(d) } %}
-  | _ stringType __ constantField _ assignment _ stringConstantValue _ comment:? {% function(d) { return extend(d) } %}
+  | _ stringType __ constantField _ assignment _ stringConstantValue:? _ comment:? {% function(d) {
+      d[7] = d[7] || { value: "", valueText: "" };
+      return extend(d)
+      } %}
   | comment {% function(d) { return null } %}
   | blankLine {% function(d) { return null } %}
 
