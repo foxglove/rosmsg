@@ -3,8 +3,8 @@ const moo = require("moo");
 const lexer = moo.compile({
   space: {match: /\s+/, lineBreaks: true},
   number: /-?(?:[0-9]|[1-9][0-9]+)(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?\b/,
-  doubleQuotedString: /"(?:\\["bfnrt/\\]|\\u[a-fA-F0-9]{4}|[^"\\])*"/,
-  singleQuotedString: /'(?:\\['bfnrt/\\]|\\u[a-fA-F0-9]{4}|[^'\\])*'/,
+  doubleQuotedString: /"(?:\\.|[^"\\])*"/,
+  singleQuotedString: /'(?:\\.|[^'\\])*'/,
   comment: /#[^\n]*/,
   '[': '[',
   ']': ']',
@@ -14,6 +14,53 @@ const lexer = moo.compile({
   fieldOrType: /[a-zA-Z][a-zA-Z0-9_]*(?:\/[a-zA-Z][a-zA-Z0-9_]*){0,2}/,
   plainString: /[^#\s\n][^\s\n]*/,
 });
+
+const STRING_ESCAPES = String.raw`\\(?<char>['"abfnrtv\\])|\\(?<oct>[0-7]{1,3})|\\x(?<hex2>[a-fA-F0-9]{2})|\\u(?<hex4>[a-fA-F0-9]{4})|\\U(?<hex8>[a-fA-F0-9]{8})`;
+
+function parseStringLiteral(maybeQuotedStr) {
+  let quoteThatMustBeEscaped = "";
+   let str = maybeQuotedStr;
+   for (const quote of ["'", '"']) {
+     if (maybeQuotedStr.startsWith(quote)) {
+       if (!maybeQuotedStr.endsWith(quote)) {
+         throw new Error(`Expected terminating ${quote} in string literal: ${maybeQuotedStr}`);
+       }
+       quoteThatMustBeEscaped = quote;
+       str = maybeQuotedStr.substring(quote.length, maybeQuotedStr.length - quote.length);
+       break;
+     }
+   }
+   if (
+     !new RegExp(String.raw`^(?:[^\\${quoteThatMustBeEscaped}]|${STRING_ESCAPES})*$`).test(str) ==
+     undefined
+   ) {
+     throw new Error(`Invalid string literal: ${str}`);
+   }
+  return str.replace(new RegExp(STRING_ESCAPES, "g"), (...args) => {
+    const { char, oct, hex2, hex4, hex8 } = args[args.length - 1];
+    const hex = hex2 ?? hex4 ?? hex8;
+    if (char != undefined) {
+      return {
+        "'": "'",
+        '"': '"',
+        a: "\x07",
+        b: "\b",
+        f: "\f",
+        n: "\n",
+        r: "\r",
+        t: "\t",
+        v: "\v",
+        "\\": "\\",
+      }[char];
+    } else if (oct != undefined) {
+      return String.fromCodePoint(parseInt(oct, 8));
+    } else if (hex != undefined) {
+      return String.fromCodePoint(parseInt(hex, 16));
+    } else {
+      throw new Error("Expected exactly one matched group");
+    }
+  });
+}
 %}
 
 @lexer lexer
@@ -140,20 +187,9 @@ bool ->
 
 number -> %number {% function(d) { return parseFloat(d[0].value) } %}
 
-doubleQuotedString -> %doubleQuotedString {% function(d) { return JSON.parse(d[0].value) } %}
+doubleQuotedString -> %doubleQuotedString {% function(d) { return parseStringLiteral(d[0].value) } %}
 
-singleQuotedString -> %singleQuotedString {% function(d) {
-  let input = d[0].value;
-  // Remove wrapping quotes
-  input = input.replace(/^[']|[']$/g, ``);
-  // Unescape escaped single quotes
-  input = input.replace(/\\'/g, `'`);
-  // Escape unescaped double quotes
-  input = input.replace(/(^|[^\\])"/g, `$1\\"`);
-  // Add wrapping double quotes
-  input = `"${input}"`;
-  return JSON.parse(input);
-} %}
+singleQuotedString -> %singleQuotedString {% function(d) { return parseStringLiteral(d[0].value) } %}
 
 unQuotedString -> unQuotedWord %space:? unQuotedString:? {% function(d) {
   let output = "";
@@ -168,19 +204,14 @@ unQuotedString -> unQuotedWord %space:? unQuotedString:? {% function(d) {
       output += word;
     }
   }
-  return JSON.parse(`"${output}"`);
+  return parseStringLiteral(output);
 } %}
 
 unQuotedWord -> %fieldOrType {% function(d) {
   return d[0].value;
 } %}
 
-unQuotedWord -> %plainString {% function(d) {
-  let input = d[0].value;
-  // Add wrapping double quotes
-  input = `"${input}"`;
-  return JSON.parse(input);
-} %}
+unQuotedWord -> %plainString {% function(d) { return parseStringLiteral(d[0].value); } %}
 
 # <=N
 upperBound -> "<=" number {% function(d) { return d[1] } %}
