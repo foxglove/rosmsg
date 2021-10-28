@@ -317,6 +317,12 @@ describe("parseMessageDefinition", () => {
       string FOO_STR = 'Foo'    ${""}
       string EMPTY=
       string EXAMPLE="#comments" # are handled properly
+      string UNQUOTED= Bar
+      string UNQUOTEDSPACE = Bar Foo
+      string UNQUOTEDSPECIAL = afse_doi@f4!  :834$%G$%
+      string BLANK=
+      string BLANKCOMMENT=# Blank with comment
+      string BLANKSPACECOMMENT= # Blank with comment after space
     `;
     const types = parse(messageDefinition, { ros2: true });
     expect(types).toEqual([
@@ -370,6 +376,48 @@ describe("parseMessageDefinition", () => {
             isConstant: true,
             value: "#comments",
             valueText: '"#comments"',
+          },
+          {
+            name: "UNQUOTED",
+            type: "string",
+            isConstant: true,
+            value: "Bar",
+            valueText: "Bar",
+          },
+          {
+            name: "UNQUOTEDSPACE",
+            type: "string",
+            isConstant: true,
+            value: "Bar Foo",
+            valueText: "Bar Foo",
+          },
+          {
+            name: "UNQUOTEDSPECIAL",
+            type: "string",
+            isConstant: true,
+            value: "afse_doi@f4!  :834$%G$%",
+            valueText: "afse_doi@f4!  :834$%G$%",
+          },
+          {
+            name: "BLANK",
+            type: "string",
+            isConstant: true,
+            value: "",
+            valueText: "",
+          },
+          {
+            name: "BLANKCOMMENT",
+            type: "string",
+            isConstant: true,
+            value: "",
+            valueText: "",
+          },
+          {
+            name: "BLANKSPACECOMMENT",
+            type: "string",
+            isConstant: true,
+            value: "",
+            valueText: "",
           },
         ],
         name: undefined,
@@ -498,19 +546,35 @@ describe("parseMessageDefinition", () => {
     String.raw`"hello'\"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804"`,
     String.raw`hello\'\"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804`,
     String.raw`hello'"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804`,
-  ])("parses string default value `%s`", (str) => {
+  ])("parses string constant/default value `%s`", (str) => {
+    const expected = `hello'"\x07\b\f\n\r\t\v\\${String.fromCodePoint(
+      0o12,
+    )}\x019\x10\u1010${String.fromCodePoint(0x2f804)}`;
     expect(parse(`string x ${str}`, { ros2: true })).toEqual([
       {
         definitions: [
-          {
-            name: "x",
-            type: "string",
-            defaultValue: `hello'"\x07\b\f\n\r\t\v\\${String.fromCodePoint(
-              0o12,
-            )}\x019\x10\u1010${String.fromCodePoint(0x2f804)}`,
-            isArray: false,
-            isComplex: false,
-          },
+          { name: "x", type: "string", defaultValue: expected, isArray: false, isComplex: false },
+        ],
+      },
+    ]);
+    expect(parse(`string X = ${str} #comment`, { ros2: true })).toEqual([
+      {
+        definitions: [
+          { name: "X", type: "string", isConstant: true, value: expected, valueText: str },
+        ],
+      },
+    ]);
+    expect(parse(`string X =${str}`, { ros2: true })).toEqual([
+      {
+        definitions: [
+          { name: "X", type: "string", isConstant: true, value: expected, valueText: str },
+        ],
+      },
+    ]);
+    expect(parse(`string X =${str}#comment`, { ros2: true })).toEqual([
+      {
+        definitions: [
+          { name: "X", type: "string", isConstant: true, value: expected, valueText: str },
         ],
       },
     ]);
