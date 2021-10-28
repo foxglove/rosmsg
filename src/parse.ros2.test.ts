@@ -28,6 +28,84 @@ describe("parseMessageDefinition", () => {
     ]);
   });
 
+  it.each([
+    [`[a,b]`, ["a", "b"]],
+    [`[a,b]#`, ["a", "b"]],
+    [`[a,'b#c']`, ["a", "b#c"]],
+  ])("parses array default value %s", (literal, value) => {
+    expect(parse(`string[] name ${literal}`, { ros2: true })).toEqual([
+      {
+        definitions: [
+          {
+            arrayLength: undefined,
+            isArray: true,
+            isComplex: false,
+            name: "name",
+            type: "string",
+            defaultValue: value,
+          },
+        ],
+        name: undefined,
+      },
+    ]);
+  });
+
+  it.each([`[,]`, `[,a]`, `[a,']`, `[`, `]`, `[a,b]x`])(
+    "rejects invalid string array literal %s, but accepts it as a string literal",
+    (literal) => {
+      expect(() => parse(`string[] name ${literal}`, { ros2: true })).toThrow(
+        /Expected comma or end of array|Expected array element before comma|Array must start with \[ and end with \]/,
+      );
+
+      expect(parse(`string name ${literal}`, { ros2: true })).toEqual([
+        {
+          definitions: [
+            {
+              arrayLength: undefined,
+              isArray: false,
+              isComplex: false,
+              name: "name",
+              type: "string",
+              defaultValue: literal,
+            },
+          ],
+          name: undefined,
+        },
+      ]);
+
+      expect(parse(`string name ${literal}#comment`, { ros2: true })).toEqual([
+        {
+          definitions: [
+            {
+              arrayLength: undefined,
+              isArray: false,
+              isComplex: false,
+              name: "name",
+              type: "string",
+              defaultValue: literal,
+            },
+          ],
+          name: undefined,
+        },
+      ]);
+
+      expect(parse(`string name ${literal} #comment`, { ros2: true })).toEqual([
+        {
+          definitions: [
+            {
+              arrayLength: undefined,
+              isArray: false,
+              isComplex: false,
+              name: "name",
+              type: "string",
+              defaultValue: literal,
+            },
+          ],
+          name: undefined,
+        },
+      ]);
+    },
+  );
   it("rejects valid tokens that don't fully match a parser rule", () => {
     expect(() => parse("abc", { ros2: true })).toThrow("Could not parse line: 'abc'");
   });
@@ -409,6 +487,35 @@ describe("parseMessageDefinition", () => {
         name: "abc1/Foo2",
       },
     ]);
+  });
+
+  it.each([
+    String.raw`'hello\'\"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804'`,
+    String.raw`'hello\'"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804'`,
+    String.raw`"hello\'\"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804"`,
+    String.raw`"hello'\"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804"`,
+    String.raw`hello\'\"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804`,
+    String.raw`hello'"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804`,
+  ])("parses string default value `%s`", (str) => {
+    expect(parse(`string x ${str}`, { ros2: true })).toEqual([
+      {
+        definitions: [
+          {
+            name: "x",
+            type: "string",
+            defaultValue: `hello'"\x07\b\f\n\r\t\v\\${String.fromCodePoint(
+              0o12,
+            )}\x019\x10\u1010${String.fromCodePoint(0x2f804)}`,
+            isArray: false,
+            isComplex: false,
+          },
+        ],
+      },
+    ]);
+  });
+
+  it.each(["int32 x abc", "bool x abc"])("rejects literals of incorrect type: %s", (line) => {
+    expect(() => parse(line, { ros2: true })).toThrow();
   });
 
   it("parses default values", () => {
