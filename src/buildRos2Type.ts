@@ -9,9 +9,9 @@ const TYPE = String.raw`(?<type>[a-zA-Z0-9_/]+)`;
 const STRING_BOUND = String.raw`(?:<=(?<stringBound>\d+))`;
 const ARRAY_BOUND = String.raw`(?:(?<unboundedArray>\[\])|\[(?<arrayLength>\d+)\]|\[<=(?<arrayBound>\d+)\])`;
 const NAME = String.raw`(?<name>[a-zA-Z0-9_]+)`;
-const QUOTED_STRING = String.raw`'(?:\\.|[^'])*'|"(?:\\.|[^"])*"`;
-const COMMENT_TERMINATED_LITERAL = String.raw`(?:${QUOTED_STRING}|[^'"#][^#]*)`;
-const ARRAY_TERMINATED_LITERAL = String.raw`(?:${QUOTED_STRING}|[^'"#][^\]#,]*)`;
+const QUOTED_STRING = String.raw`'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"`;
+const COMMENT_TERMINATED_LITERAL = String.raw`(?:${QUOTED_STRING}|(?:\\.|[^\s'"#\\])(?:\\.|[^#\\])*)`;
+const ARRAY_TERMINATED_LITERAL = String.raw`(?:${QUOTED_STRING}|(?:\\.|[^\s'"\],#\\])(?:\\.|[^\],#\\])*)`;
 const CONSTANT_ASSIGNMENT = String.raw`\s*=\s*(?<constantValue>${COMMENT_TERMINATED_LITERAL}?)`;
 const DEFAULT_VALUE_ARRAY = String.raw`\[(?:${ARRAY_TERMINATED_LITERAL},)*${ARRAY_TERMINATED_LITERAL}?\]`;
 const DEFAULT_VALUE = String.raw`(?<defaultValue>${DEFAULT_VALUE_ARRAY}|${COMMENT_TERMINATED_LITERAL})`;
@@ -240,6 +240,7 @@ export function buildRos2Type(lines: { line: string }[]): RosMsgDefinition {
           throw new Error(`Invalid constant name: ${name!}`);
         }
       } else {
+        console.log("match.groups", match.groups);
         if (!/^[a-z](?:_?[a-z0-9]+)*$/.test(name!)) {
           throw new Error(`Invalid field name: ${name!}`);
         }

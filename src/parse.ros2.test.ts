@@ -324,6 +324,7 @@ describe("parseMessageDefinition", () => {
       string BLANK=
       string BLANKCOMMENT=# Blank with comment
       string BLANKSPACECOMMENT= # Blank with comment after space
+      string ESCAPED_QUOTE = \\'a#comment
     `;
     const types = parse(messageDefinition, { ros2: true });
     expect(types).toEqual([
@@ -419,6 +420,13 @@ describe("parseMessageDefinition", () => {
             isConstant: true,
             value: "",
             valueText: "",
+          },
+          {
+            name: "ESCAPED_QUOTE",
+            type: "string",
+            isConstant: true,
+            value: "'a",
+            valueText: "\\'a",
           },
         ],
         name: undefined,
@@ -540,6 +548,39 @@ describe("parseMessageDefinition", () => {
     ]);
   });
 
+  it.each(["\\", "hi\\", String.raw`'abc\'`])("rejects invalid string literal %s", (str) => {
+    expect(() => parse(`string x ${str}`, { ros2: true })).toThrow("Could not parse line");
+    // "Invalid field name" is not an ideal error message but that's ok. It just means the = parsed
+    // as potentially part of a default value, but the name is a constant name (uppercase) rather
+    // than a field name.
+    expect(() => parse(`string X = ${str}`, { ros2: true })).toThrow(
+      /Invalid field name|Could not parse line/,
+    );
+  });
+
+  it.each([
+    [`x`, `x`],
+    [`\\b`, `\b`],
+    [`\\p`, `\\p`],
+    [`\\foo`, `\foo`],
+    [`[a\\,b]`, `[a\\,b]`],
+  ])("parses unquoted string default/constant value %s", (literal, value) => {
+    expect(parse(`string x ${literal}`, { ros2: true })).toEqual([
+      {
+        definitions: [
+          { isArray: false, isComplex: false, name: "x", type: "string", defaultValue: value },
+        ],
+        name: undefined,
+      },
+    ]);
+    expect(parse(`string X = ${literal}`, { ros2: true })).toEqual([
+      {
+        definitions: [{ isConstant: true, name: "X", type: "string", valueText: literal, value }],
+        name: undefined,
+      },
+    ]);
+  });
+
   it.each([
     String.raw`'hello\'\"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804'`,
     String.raw`'hello\'"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804'`,
@@ -547,7 +588,7 @@ describe("parseMessageDefinition", () => {
     String.raw`"hello'\"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804"`,
     String.raw`hello\'\"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804`,
     String.raw`hello'"\a\b\f\n\r\t\v\\\012\019\x10\u1010\U0002F804`,
-  ])("parses string constant/default value `%s`", (str) => {
+  ])("parses escapes in string constant/default value `%s`", (str) => {
     const expected = `hello'"\x07\b\f\n\r\t\v\\${String.fromCodePoint(
       0o12,
     )}\x019\x10\u1010${String.fromCodePoint(0x2f804)}`;
@@ -599,6 +640,7 @@ describe("parseMessageDefinition", () => {
       string j '"hello"'
       string k "\\"hello\\""
       string l '\\'hello\\''
+      string m \\foo
     `;
     const types = parse(messageDefinition, { ros2: true });
     expect(types).toEqual([
@@ -685,6 +727,13 @@ describe("parseMessageDefinition", () => {
             name: "l",
             type: "string",
             defaultValue: "'hello'",
+            isArray: false,
+            isComplex: false,
+          },
+          {
+            name: "m",
+            type: "string",
+            defaultValue: "\foo",
             isArray: false,
             isComplex: false,
           },
