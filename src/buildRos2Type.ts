@@ -240,7 +240,6 @@ export function buildRos2Type(lines: { line: string }[]): RosMsgDefinition {
           throw new Error(`Invalid constant name: ${name!}`);
         }
       } else {
-        console.log("match.groups", match.groups);
         if (!/^[a-z](?:_?[a-z0-9]+)*$/.test(name!)) {
           throw new Error(`Invalid field name: ${name!}`);
         }
