@@ -6,7 +6,7 @@ const lexer = moo.compile({
   comment: /#[^\n]*/,
   '[': '[',
   ']': ']',
-  assignment: /=[^\n]+/,
+  assignment: /=[^\n]*/,
   // Leading underscores are disallowed in field names, while constant names have no explicit restrictions.
   // So we are more lenient in lexing here, and the validation steps below are more strict.
   // See: https://github.com/ros/genmsg/blob/7d8b6ce6f43b6e39ea8261125d270f2d3062356f/src/genmsg/msg_loader.py#L188-L238

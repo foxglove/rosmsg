@@ -252,6 +252,9 @@ describe("parseMessageDefinition", () => {
       float32 baz= \t -32.25
       bool someBoolean = 0
       string fooStr = Foo    ${""}
+      string EMPTY1 =  ${""}
+      string EMPTY2 =
+      string HASH = #
       string EXAMPLE="#comments" are ignored, and leading and trailing whitespace removed
       uint64 SMOOTH_MOVE_START    = 0000000000000001 # e.g. kobuki_msgs/VersionInfo
     `;
@@ -293,6 +296,27 @@ describe("parseMessageDefinition", () => {
             isConstant: true,
             value: "Foo",
             valueText: "Foo",
+          },
+          {
+            name: "EMPTY1",
+            type: "string",
+            isConstant: true,
+            value: "",
+            valueText: "",
+          },
+          {
+            name: "EMPTY2",
+            type: "string",
+            isConstant: true,
+            value: "",
+            valueText: "",
+          },
+          {
+            name: "HASH",
+            type: "string",
+            isConstant: true,
+            value: "#",
+            valueText: "#",
           },
           {
             name: "EXAMPLE",
