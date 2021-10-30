@@ -157,8 +157,8 @@ describe("parseMessageDefinition", () => {
     ]);
   });
 
-  it("parses variable length string array", () => {
-    const types = parse("string[] names");
+  it.each(["string", "int32", "int64"])("parses variable length %s array", (type) => {
+    const types = parse(`${type}[] names`);
     expect(types).toEqual([
       {
         definitions: [
@@ -167,7 +167,7 @@ describe("parseMessageDefinition", () => {
             isArray: true,
             isComplex: false,
             name: "names",
-            type: "string",
+            type,
           },
         ],
         name: undefined,
@@ -257,6 +257,7 @@ describe("parseMessageDefinition", () => {
       string HASH = #
       string EXAMPLE="#comments" are ignored, and leading and trailing whitespace removed
       uint64 SMOOTH_MOVE_START    = 0000000000000001 # e.g. kobuki_msgs/VersionInfo
+      int64 LARGE_VALUE = -9223372036854775807
     `;
     const types = parse(messageDefinition);
     expect(types).toEqual([
@@ -329,8 +330,15 @@ describe("parseMessageDefinition", () => {
             name: "SMOOTH_MOVE_START",
             type: "uint64",
             isConstant: true,
-            value: 1,
+            value: 1n,
             valueText: "0000000000000001",
+          },
+          {
+            name: "LARGE_VALUE",
+            type: "int64",
+            isConstant: true,
+            value: -9223372036854775807n,
+            valueText: "-9223372036854775807",
           },
         ],
         name: undefined,
