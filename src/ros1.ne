@@ -100,7 +100,7 @@ numericConstantValue -> assignment {% function(d, _, reject) {
 bigintConstantValue -> assignment {% function(d, _, reject) {
   const valueText = d[0].split("#")[0].trim();
   try {
-    const value = BigInt(d[0].split("#")[0].trim());
+    const value = BigInt(valueText);
     return { value, valueText };
   } catch {
     return reject;
