@@ -16,7 +16,9 @@ const CONSTANT_ASSIGNMENT = String.raw`\s*=\s*(?<constantValue>${COMMENT_TERMINA
 const DEFAULT_VALUE_ARRAY = String.raw`\[(?:${ARRAY_TERMINATED_LITERAL},)*${ARRAY_TERMINATED_LITERAL}?\]`;
 const DEFAULT_VALUE = String.raw`(?<defaultValue>${DEFAULT_VALUE_ARRAY}|${COMMENT_TERMINATED_LITERAL})`;
 const COMMENT = String.raw`(?:#.*)`;
-const DEFINITION_LINE = String.raw`^${TYPE}${STRING_BOUND}?${ARRAY_BOUND}?\s+${NAME}(?:${CONSTANT_ASSIGNMENT}|\s+${DEFAULT_VALUE})?\s*${COMMENT}?$`;
+const DEFINITION_LINE_REGEX = new RegExp(
+  String.raw`^${TYPE}${STRING_BOUND}?${ARRAY_BOUND}?\s+${NAME}(?:${CONSTANT_ASSIGNMENT}|\s+${DEFAULT_VALUE})?\s*${COMMENT}?$`,
+);
 
 const STRING_ESCAPES = String.raw`\\(?<char>['"abfnrtv\\])|\\(?<oct>[0-7]{1,3})|\\x(?<hex2>[a-fA-F0-9]{2})|\\u(?<hex4>[a-fA-F0-9]{4})|\\U(?<hex8>[a-fA-F0-9]{8})`;
 
@@ -63,6 +65,8 @@ function parseNumberLiteral(str: string, min: number, max: number): number {
   return value;
 }
 
+const LITERAL_REGEX = new RegExp(ARRAY_TERMINATED_LITERAL, "y");
+const COMMA_OR_END_REGEX = /\s*(,)\s*|\s*$/y;
 function parseArrayLiteral(
   type: string,
   rawStr: string,
@@ -72,31 +76,28 @@ function parseArrayLiteral(
   }
   const str = rawStr.substring(1, rawStr.length - 1);
   if (type === "string" || type === "wstring") {
-    const literalPattern = new RegExp(ARRAY_TERMINATED_LITERAL, "y");
-    const commaOrEndPattern = /\s*(,)\s*|\s*$/y;
-
     const results: string[] = [];
     let offset = 0;
     while (offset < str.length) {
       if (str[offset] === ",") {
         throw new Error("Expected array element before comma");
       }
-      literalPattern.lastIndex = offset;
-      let match = literalPattern.exec(str);
+      LITERAL_REGEX.lastIndex = offset;
+      let match = LITERAL_REGEX.exec(str);
       if (match) {
         results.push(parseStringLiteral(match[0]!));
-        offset = literalPattern.lastIndex;
+        offset = LITERAL_REGEX.lastIndex;
       }
 
-      commaOrEndPattern.lastIndex = offset;
-      match = commaOrEndPattern.exec(str);
+      COMMA_OR_END_REGEX.lastIndex = offset;
+      match = COMMA_OR_END_REGEX.exec(str);
       if (!match) {
         throw new Error("Expected comma or end of array");
       }
       if (!match[1]) {
         break;
       }
-      offset = commaOrEndPattern.lastIndex;
+      offset = COMMA_OR_END_REGEX.lastIndex;
     }
     return results;
   }
@@ -219,7 +220,7 @@ export function buildRos2Type(lines: { line: string }[]): RosMsgDefinition {
     } else if ((match = /^MSG: ([^ ]+)\s*(?:#.+)?$/.exec(line))) {
       complexTypeName = match[1];
       continue;
-    } else if ((match = new RegExp(DEFINITION_LINE).exec(line))) {
+    } else if ((match = DEFINITION_LINE_REGEX.exec(line))) {
       const {
         type: rawType,
         stringBound,

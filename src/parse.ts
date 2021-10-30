@@ -13,6 +13,8 @@ import { buildRos2Type } from "./buildRos2Type";
 import ros1Rules from "./ros1.ne";
 import { RosMsgField, RosMsgDefinition } from "./types";
 
+const ROS1_GRAMMAR = Grammar.fromCompiled(ros1Rules);
+
 export type ParseOptions = {
   ros2?: boolean;
 };
@@ -35,8 +37,6 @@ export type ParseOptions = {
 //
 // See unit tests for more examples.
 export function parse(messageDefinition: string, options: ParseOptions = {}): RosMsgDefinition[] {
-  const ros1Grammar = Grammar.fromCompiled(ros1Rules);
-
   // read all the lines and remove empties
   const allLines = messageDefinition
     .split("\n")
@@ -57,7 +57,7 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Ro
       types.push(
         options.ros2 === true
           ? buildRos2Type(definitionLines)
-          : buildType(definitionLines, ros1Grammar),
+          : buildType(definitionLines, ROS1_GRAMMAR),
       );
       definitionLines = [];
     } else {
@@ -67,7 +67,7 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Ro
   types.push(
     options.ros2 === true
       ? buildRos2Type(definitionLines)
-      : buildType(definitionLines, ros1Grammar),
+      : buildType(definitionLines, ROS1_GRAMMAR),
   );
 
   // Fix up complex type names
