@@ -9,9 +9,11 @@
 
 import { Grammar, Parser } from "nearley";
 
+import { buildRos2Type } from "./buildRos2Type";
 import ros1Rules from "./ros1.ne";
-import ros2Rules from "./ros2.ne";
 import { RosMsgField, RosMsgDefinition } from "./types";
+
+const ROS1_GRAMMAR = Grammar.fromCompiled(ros1Rules);
 
 export type ParseOptions = {
   ros2?: boolean;
@@ -35,8 +37,6 @@ export type ParseOptions = {
 //
 // See unit tests for more examples.
 export function parse(messageDefinition: string, options: ParseOptions = {}): RosMsgDefinition[] {
-  const grammar = Grammar.fromCompiled(options.ros2 === true ? ros2Rules : ros1Rules);
-
   // read all the lines and remove empties
   const allLines = messageDefinition
     .split("\n")
@@ -54,13 +54,21 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Ro
 
     // definitions are split by equal signs
     if (line.startsWith("==")) {
-      types.push(buildType(definitionLines, grammar));
+      types.push(
+        options.ros2 === true
+          ? buildRos2Type(definitionLines)
+          : buildType(definitionLines, ROS1_GRAMMAR),
+      );
       definitionLines = [];
     } else {
       definitionLines.push({ line });
     }
   });
-  types.push(buildType(definitionLines, grammar));
+  types.push(
+    options.ros2 === true
+      ? buildRos2Type(definitionLines)
+      : buildType(definitionLines, ROS1_GRAMMAR),
+  );
 
   // Fix up complex type names
   types.forEach(({ definitions }) => {
