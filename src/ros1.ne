@@ -18,11 +18,13 @@ const lexer = moo.compile({
 
 main ->
     _ boolType arrayType __ field _ comment:? simple {% function(d) { return extend(d) } %}
+  | _ bigintType arrayType __ field _ comment:? simple {% function(d) { return extend(d) } %}
   | _ numericType arrayType __ field _ comment:? simple {% function(d) { return extend(d) } %}
   | _ stringType arrayType __ field _ comment:? simple {% function(d) { return extend(d) } %}
   | _ timeType arrayType __ field _ comment:? simple {% function(d) { return extend(d) } %}
   | _ customType arrayType __ field _ comment:? complex {% function(d) { return extend(d) } %}
   | _ boolType __ constantField _ boolConstantValue _ comment:? {% function(d) { return extend(d) } %}
+  | _ bigintType __ constantField _ bigintConstantValue _ comment:? {% function(d) { return extend(d) } %}
   | _ numericType __ constantField _ numericConstantValue _ comment:? {% function(d) { return extend(d) } %}
   | _ stringType __ constantField _ stringConstantValue _ comment:? {% function(d) { return extend(d) } %}
   | comment {% function(d) { return null } %}
@@ -32,8 +34,10 @@ main ->
 
 boolType -> "bool" {% function(d) { return { type: d[0].value } } %}
 
-numericType ->
-   ("byte"
+bigintType -> ("int64" | "uint64") {% function(d) { return { type: d[0][0].value } } %}
+
+numericType -> (
+    "byte"
   | "char"
   | "float32"
   | "float64"
@@ -43,8 +47,7 @@ numericType ->
   | "uint16"
   | "int32"
   | "uint32"
-  | "int64"
-  | "uint64") {% function(d) { return { type: d[0][0].value } } %}
+) {% function(d) { return { type: d[0][0].value } } %}
 
 stringType -> "string" {% function(d) { return { type: d[0].value } } %}
 
@@ -92,6 +95,16 @@ numericConstantValue -> assignment {% function(d, _, reject) {
   const valueText = d[0].split("#")[0].trim();
   const value = parseFloat(valueText);
   return !isNaN(value) ? { value, valueText } : reject;
+} %}
+
+bigintConstantValue -> assignment {% function(d, _, reject) {
+  const valueText = d[0].split("#")[0].trim();
+  try {
+    const value = BigInt(valueText);
+    return { value, valueText };
+  } catch {
+    return reject;
+  }
 } %}
 
 stringConstantValue -> assignment {% function(d) { return { value: d[0], valueText: d[0] } } %}
