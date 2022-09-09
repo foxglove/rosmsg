@@ -2,115 +2,124 @@ import { parse } from "./parse";
 import { readFile, readdir } from "fs/promises";
 import { join, sep } from "path";
 
+type TypeInformation = {
+  fullType: string;
+  complexTypes: string[];
+  msgDefinitionString: string;
+};
+
 async function main() {
   if (process.argv.length !== 4) {
     console.error("Usage: gendeps <msgdefs-dir> <msg-file>");
     process.exit(1);
   }
-  const msgdefsPath = process.argv[2]!;
-  const msgFile = process.argv[3]!;
-  const msgDefinitionString = await readFile(msgFile, { encoding: "utf8" });
-  const currentPackage = getPackagePath(msgdefsPath, msgFile);
-  const loadedTypes = new Set<string>();
 
-  // parse just the unique set of type names from the .msg file (in order seen, depth first)
+  const rootPath = process.argv[2]!;
+  const filename = process.argv[3]!;
+  const fullTypeName = getFullTypeFromFilename(filename, rootPath);
+
+  const res = await loadType(fullTypeName, rootPath, getPackageName(fullTypeName));
+  console.log(res.msgDefinitionString);
+
+  const complexTypes = res.complexTypes;
+  const seenTypes = new Set<string>();
+  seenTypes.add(res.fullType);
+
+  while (complexTypes.length > 0) {
+    const complexType = complexTypes.shift()!;
+    const curRes = await loadType(complexType, rootPath, getPackageName(complexType));
+
+    console.log("================================================================================");
+    console.log(`MSG: ${curRes.fullType}`);
+    console.log(curRes.msgDefinitionString);
+
+    for (const complexSubType of curRes.complexTypes) {
+      if (!seenTypes.has(complexSubType)) {
+        complexTypes.push(complexSubType);
+        seenTypes.add(complexSubType);
+      }
+    }
+  }
+}
+
+function getFullType(typeName: string, currentPackage: string | undefined): string {
+  if (typeName.includes("/")) {
+    return typeName;
+  }
+  if (!currentPackage) {
+    throw new Error(`Cannot resolve relative type name ${typeName}`);
+  }
+  return `${currentPackage}/${typeName}`;
+}
+
+function getPackageName(typeName: string): string {
+  return typeName.split("/")[0]!;
+}
+
+function getBaseType(typeName: string): string {
+  return typeName.split("/").pop()!;
+}
+
+async function loadType(
+  typeName: string,
+  rootPath: string,
+  currentPackage: string,
+): Promise<TypeInformation> {
+  const fullType = getFullType(typeName, currentPackage);
+  const packageName = getPackageName(fullType);
+  const baseType = getBaseType(typeName);
+  const msgDefinitionString = await readFileFromBaseDir(
+    `${baseType}.msg`,
+    join(rootPath, packageName),
+  );
+  if (msgDefinitionString == undefined) {
+    throw new Error(
+      `Failed to load definition for type ${typeName} (current package: ${currentPackage})`,
+    );
+  }
+
   const complexTypes: string[] = [];
   const msgDefinitions = parse(msgDefinitionString, { ros2: true, skipTypeFixup: true });
   for (const msgdef of msgDefinitions) {
     for (const definition of msgdef.definitions) {
       if (definition.isComplex === true && !complexTypes.includes(definition.type)) {
-        complexTypes.push(definition.type);
+        complexTypes.push(getFullType(definition.type, currentPackage));
       }
     }
   }
 
-  console.log(msgDefinitionString);
-  while (complexTypes.length > 0) {
-    const typeName = complexTypes.shift()!;
-    const res = await loadDefinitionForType(typeName, msgdefsPath, currentPackage);
-    if (!res) {
-      throw new Error(`Failed to load definition for type ${typeName}`);
-    }
-    const [curTypeName, curMsgDefinitionString] = res;
-    loadedTypes.add(curTypeName);
-    console.log("================================================================================");
-    console.log(`MSG: ${curTypeName}`);
-    console.log(curMsgDefinitionString);
-
-    const curMsgDefinitions = parse(curMsgDefinitionString, { ros2: true, skipTypeFixup: true });
-    for (const msgdef of curMsgDefinitions) {
-      for (const definition of msgdef.definitions) {
-        if (
-          definition.isComplex === true &&
-          !complexTypes.includes(definition.type) &&
-          !loadedTypes.has(definition.type)
-        ) {
-          complexTypes.push(definition.type);
-        }
-      }
-    }
-  }
-
-  // for each type name, find the .msg file in the msgdef root directory
-  // concatenate the .msg file contents to the output
+  return { fullType, complexTypes, msgDefinitionString };
 }
 
-function getPackagePath(msgdefsPath: string, msgFile: string): string {
-  const pathParts = msgdefsPath.split(sep);
-  const msgFileParts = msgFile.split(sep);
+function getFullTypeFromFilename(filename: string, rootPath: string): string {
+  const pathParts = rootPath.split(sep);
+  const filenameParts = filename.replace(/\.msg$/, "").split(sep);
 
   // Remove pathParts from msgFileParts
   for (const pathPart of pathParts) {
-    if (pathPart !== msgFileParts[0]) {
-      console.log(`${pathPart} !== ${msgFileParts[0]}`);
-      throw new Error(`<msg-file> "${msgFile}" must be under <msgdefs-dir> "${msgdefsPath}"`);
+    if (pathPart !== filenameParts[0]) {
+      console.log(`${pathPart} !== ${filenameParts[0]}`);
+      throw new Error(`<msg-file> "${filename}" must be under <msgdefs-dir> "${rootPath}"`);
     }
-    msgFileParts.shift();
+    filenameParts.shift();
   }
 
-  return msgFileParts[0]!;
-}
-
-async function loadDefinitionForType(
-  typeName: string,
-  rootPath: string,
-  currentPackage: string,
-): Promise<[string, string] | undefined> {
-  if (typeName.includes("/")) {
-    // This is a fully qualified type name. Load the definition from the root path
-    const parts = typeName.split("/");
-    if (parts.length < 2) {
-      throw new Error(`Invalid type name: ${typeName}`);
-    }
-    const packageName = parts[0]!;
-    const typeBaseName = parts[parts.length - 1]!;
-    const filename = `${typeBaseName}.msg`;
-    const contents = await readFileFromPackage(filename, join(rootPath, packageName));
-    return contents != undefined ? [typeName, contents] : undefined;
-  }
-
-  // This is a relative type name. Load the definition from the relative path
-  const filename = `${typeName}.msg`;
-  const fullTypeName = `${currentPackage}/${typeName}`;
-  const contents = await readFileFromPackage(filename, join(rootPath, currentPackage));
-  return contents != undefined ? [fullTypeName, contents] : undefined;
+  const packageName = filenameParts.shift()!;
+  const baseType = filenameParts[filenameParts.length - 1]!;
+  return `${packageName}/${baseType}`;
 }
 
 // Recursively search inside a directory for a file with a given name
-async function readFileFromPackage(
-  filename: string,
-  packagePath: string,
-): Promise<string | undefined> {
-  // console.log(`looking for ${filename} in ${packagePath}`);
-  const files = await readdir(packagePath, { withFileTypes: true });
+async function readFileFromBaseDir(filename: string, baseDir: string): Promise<string | undefined> {
+  const files = await readdir(baseDir, { withFileTypes: true });
   for (const file of files) {
     if (file.isDirectory()) {
-      const contents = await readFileFromPackage(filename, join(packagePath, file.name));
-      if (contents) {
+      const contents = await readFileFromBaseDir(filename, join(baseDir, file.name));
+      if (contents != undefined) {
         return contents;
       }
     } else if (file.isFile() && file.name === filename) {
-      return await readFile(join(packagePath, file.name), { encoding: "utf8" });
+      return await readFile(join(baseDir, file.name), { encoding: "utf8" });
     }
   }
   return undefined;
