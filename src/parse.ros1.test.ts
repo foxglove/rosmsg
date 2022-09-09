@@ -7,7 +7,8 @@
 //   found at http://www.apache.org/licenses/LICENSE-2.0
 //   You may not use this file except in compliance with the License.
 
-import { parse } from "./parse";
+import { fixupTypes, parse } from "./parse";
+import { RosMsgDefinition } from "./types";
 
 describe("parseMessageDefinition", () => {
   it("parses a single field from a single message", () => {
@@ -455,5 +456,36 @@ describe("parseMessageDefinition", () => {
         name: "abc1/Foo2",
       },
     ]);
+  });
+});
+
+describe("fixupTypes", () => {
+  it("works with an empty list", () => {
+    const types: RosMsgDefinition[] = [];
+    fixupTypes(types);
+  });
+
+  it("rewrites type names as expected", () => {
+    const messageDefinition = `
+      Point[] points
+      ============
+      MSG: geometry_msgs/Point
+      float64 x
+    `;
+    const types = parse(messageDefinition, { skipTypeFixup: true });
+
+    expect(types).toHaveLength(2);
+    expect(types[0]!.definitions).toHaveLength(1);
+    expect(types[0]!.definitions[0]!.type).toEqual("Point");
+    expect(types[1]!.definitions).toHaveLength(1);
+    expect(types[1]!.definitions[0]!.type).toEqual("float64");
+
+    fixupTypes(types);
+
+    expect(types).toHaveLength(2);
+    expect(types[0]!.definitions).toHaveLength(1);
+    expect(types[0]!.definitions[0]!.type).toEqual("geometry_msgs/Point");
+    expect(types[1]!.definitions).toHaveLength(1);
+    expect(types[1]!.definitions[0]!.type).toEqual("float64");
   });
 });

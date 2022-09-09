@@ -16,7 +16,13 @@ import { RosMsgField, RosMsgDefinition } from "./types";
 const ROS1_GRAMMAR = Grammar.fromCompiled(ros1Rules);
 
 export type ParseOptions = {
+  /** Parse message definitions as ROS2. Otherwise, parse as ROS1 */
   ros2?: boolean;
+  /**
+   * Return the original type names used in the file, without normalizing to
+   * fully qualified type names
+   */
+  skipTypeFixup?: boolean;
 };
 
 // Given a raw message definition string, parse it into an object representation.
@@ -71,6 +77,14 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Ro
   );
 
   // Fix up complex type names
+  if (options.skipTypeFixup !== true) {
+    fixupTypes(types);
+  }
+
+  return types;
+}
+
+export function fixupTypes(types: RosMsgDefinition[]): void {
   types.forEach(({ definitions }) => {
     definitions.forEach((definition) => {
       if (definition.isComplex === true) {
@@ -82,8 +96,6 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Ro
       }
     });
   });
-
-  return types;
 }
 
 function buildType(lines: { line: string }[], grammar: Grammar): RosMsgDefinition {
