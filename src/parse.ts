@@ -78,20 +78,24 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Ro
 
   // Fix up complex type names
   if (options.skipTypeFixup !== true) {
-    types.forEach(({ definitions }) => {
-      definitions.forEach((definition) => {
-        if (definition.isComplex === true) {
-          const foundName = findTypeByName(types, definition.type).name;
-          if (foundName == undefined) {
-            throw new Error(`Missing type definition for ${definition.type}`);
-          }
-          definition.type = foundName;
-        }
-      });
-    });
+    fixupTypes(types);
   }
 
   return types;
+}
+
+export function fixupTypes(types: RosMsgDefinition[]): void {
+  types.forEach(({ definitions }) => {
+    definitions.forEach((definition) => {
+      if (definition.isComplex === true) {
+        const foundName = findTypeByName(types, definition.type).name;
+        if (foundName == undefined) {
+          throw new Error(`Missing type definition for ${definition.type}`);
+        }
+        definition.type = foundName;
+      }
+    });
+  });
 }
 
 function buildType(lines: { line: string }[], grammar: Grammar): RosMsgDefinition {
