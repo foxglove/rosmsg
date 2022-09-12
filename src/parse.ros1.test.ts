@@ -463,6 +463,7 @@ describe("fixupTypes", () => {
   it("works with an empty list", () => {
     const types: RosMsgDefinition[] = [];
     fixupTypes(types);
+    expect(types).toEqual([]);
   });
 
   it("rewrites type names as expected", () => {

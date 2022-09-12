@@ -1,6 +1,7 @@
-import { parse } from "./parse";
 import { readFile, readdir } from "fs/promises";
 import { join, sep } from "path";
+
+import { parse } from "./parse";
 
 type TypeInformation = {
   fullType: string;
@@ -98,7 +99,7 @@ function getFullTypeFromFilename(filename: string, rootPath: string): string {
   // Remove pathParts from msgFileParts
   for (const pathPart of pathParts) {
     if (pathPart !== filenameParts[0]) {
-      console.log(`${pathPart} !== ${filenameParts[0]}`);
+      console.log(`${pathPart} !== ${filenameParts[0]!}`);
       throw new Error(`<msg-file> "${filename}" must be under <msgdefs-dir> "${rootPath}"`);
     }
     filenameParts.shift();
