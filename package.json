@@ -31,8 +31,12 @@
     "dist",
     "src"
   ],
+  "bin": {
+    "gendeps2": "./bin/gendeps2"
+  },
   "scripts": {
     "build": "webpack",
+    "build:gendeps2": "webpack --config webpack.gendeps2.config.js",
     "lint:ci": "eslint --report-unused-disable-directives .",
     "lint": "eslint --report-unused-disable-directives --fix .",
     "prepack": "yarn build",
