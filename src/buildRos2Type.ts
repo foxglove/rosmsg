@@ -2,7 +2,7 @@ import { RosMsgDefinition, RosMsgField } from "./types";
 
 /**
  * Parser for ROS 2 type definition lines.
- * Reference implementation: https://github.com/ros2/rosidl/blob/master/rosidl_parser/rosidl_parser/parser.py
+ * Reference implementation: https://github.com/ros2/rosidl/blob/master/rosidl_adapter/rosidl_adapter/parser.py
  */
 
 const TYPE = String.raw`(?<type>[a-zA-Z0-9_/]+)`;
