@@ -7,8 +7,9 @@
 //   found at http://www.apache.org/licenses/LICENSE-2.0
 //   You may not use this file except in compliance with the License.
 
-import { fixupTypes, parse } from "./parse";
 import { MessageDefinition } from "@foxglove/message-definition";
+
+import { fixupTypes, parse } from "./parse";
 
 describe("parseMessageDefinition", () => {
   it("parses a single field from a single message", () => {
