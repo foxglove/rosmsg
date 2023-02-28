@@ -1,6 +1,5 @@
+import { MessageDefinition } from "@foxglove/message-definition";
 import { Md5 } from "md5-typescript";
-
-import { RosMsgDefinition } from "./types";
 
 const BUILTIN_TYPES = new Set([
   "int8",
@@ -28,12 +27,12 @@ const BUILTIN_TYPES = new Set([
  * sub-messages
  * @returns An md5 checksum string
  */
-export function md5(msgDefs: RosMsgDefinition[]): string {
+export function md5(msgDefs: MessageDefinition[]): string {
   if (msgDefs.length === 0) {
     throw new Error(`Cannot produce md5sum for empty msgDefs`);
   }
 
-  const subMsgDefs = new Map<string, RosMsgDefinition>();
+  const subMsgDefs = new Map<string, MessageDefinition>();
   for (const msgDef of msgDefs) {
     if (msgDef.name != undefined) {
       subMsgDefs.set(msgDef.name, msgDef);
@@ -45,8 +44,8 @@ export function md5(msgDefs: RosMsgDefinition[]): string {
 }
 
 function computeMessageMd5(
-  msgDef: RosMsgDefinition,
-  subMsgDefs: Map<string, RosMsgDefinition>,
+  msgDef: MessageDefinition,
+  subMsgDefs: Map<string, MessageDefinition>,
 ): string {
   let output = "";
   const constants = msgDef.definitions.filter(({ isConstant }) => isConstant);
