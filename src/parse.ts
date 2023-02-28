@@ -11,7 +11,7 @@ import { Grammar, Parser } from "nearley";
 
 import { buildRos2Type } from "./buildRos2Type";
 import ros1Rules from "./ros1.ne";
-import { MessageDefinition, MessageDefinitionField } from "./types";
+import { MessageDefinition, MessageDefinitionField } from "@foxglove/message-definition";
 
 const ROS1_GRAMMAR = Grammar.fromCompiled(ros1Rules);
 

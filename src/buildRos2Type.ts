@@ -1,4 +1,4 @@
-import { MessageDefinition, MessageDefinitionField } from "./types";
+import { MessageDefinition, MessageDefinitionField } from "@foxglove/message-definition";
 
 /**
  * Parser for ROS 2 type definition lines.

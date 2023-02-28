@@ -1,4 +1,4 @@
-import { MessageDefinition, DefaultValue } from "./types";
+import { MessageDefinition, DefaultValue } from "@foxglove/message-definition";
 
 // Converts a ROS message definition (http://wiki.ros.org/msg) into a canonical
 // message description format that is suitable for MD5 checksum generation

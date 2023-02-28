@@ -1,6 +1,6 @@
 import { Md5 } from "md5-typescript";
 
-import { MessageDefinition } from "./types";
+import { MessageDefinition } from "@foxglove/message-definition";
 
 const BUILTIN_TYPES = new Set([
   "int8",

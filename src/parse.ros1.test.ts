@@ -8,7 +8,7 @@
 //   You may not use this file except in compliance with the License.
 
 import { fixupTypes, parse } from "./parse";
-import { MessageDefinition } from "./types";
+import { MessageDefinition } from "@foxglove/message-definition";
 
 describe("parseMessageDefinition", () => {
   it("parses a single field from a single message", () => {
