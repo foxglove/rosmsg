@@ -1,4 +1,4 @@
-import { RosMsgDefinition, RosMsgField } from "./types";
+import { MessageDefinition, MessageDefinitionField } from "./types";
 
 /**
  * Parser for ROS 2 type definition lines.
@@ -210,8 +210,8 @@ function normalizeType(type: string): string {
   }
   return type;
 }
-export function buildRos2Type(lines: { line: string }[]): RosMsgDefinition {
-  const definitions: RosMsgField[] = [];
+export function buildRos2Type(lines: { line: string }[]): MessageDefinition {
+  const definitions: MessageDefinitionField[] = [];
   let complexTypeName: string | undefined;
   for (const { line } of lines) {
     let match;

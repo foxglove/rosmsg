@@ -1,11 +1,11 @@
-import { RosMsgDefinition, RosDefaultValue } from "./types";
+import { MessageDefinition, DefaultValue } from "./types";
 
 // Converts a ROS message definition (http://wiki.ros.org/msg) into a canonical
 // message description format that is suitable for MD5 checksum generation
-export function stringify(msgDefs: RosMsgDefinition[]): string {
+export function stringify(msgDefs: MessageDefinition[]): string {
   let output = "";
   for (let i = 0; i < msgDefs.length; i++) {
-    const msgDef = msgDefs[i] as RosMsgDefinition;
+    const msgDef = msgDefs[i] as MessageDefinition;
     const constants = msgDef.definitions.filter(({ isConstant }) => isConstant);
     const variables = msgDef.definitions.filter(
       ({ isConstant }) => isConstant == undefined || !isConstant,
@@ -43,7 +43,7 @@ export function stringify(msgDefs: RosMsgDefinition[]): string {
   return output.trimEnd();
 }
 
-function stringifyDefaultValue(value: RosDefaultValue): string {
+function stringifyDefaultValue(value: DefaultValue): string {
   if (Array.isArray(value)) {
     return `[${value
       .map((x) => (typeof x === "bigint" ? x.toString() : JSON.stringify(x)))

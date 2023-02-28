@@ -8,7 +8,7 @@
 //   You may not use this file except in compliance with the License.
 
 import { fixupTypes, parse } from "./parse";
-import { RosMsgDefinition } from "./types";
+import { MessageDefinition } from "./types";
 
 describe("parseMessageDefinition", () => {
   it("parses a single field from a single message", () => {
@@ -461,7 +461,7 @@ describe("parseMessageDefinition", () => {
 
 describe("fixupTypes", () => {
   it("works with an empty list", () => {
-    const types: RosMsgDefinition[] = [];
+    const types: MessageDefinition[] = [];
     fixupTypes(types);
     expect(types).toEqual([]);
   });
