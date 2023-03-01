@@ -469,21 +469,21 @@ module rosidl_parser {
             type: "int16",
             isArray: true,
             name: "unbounded_short_values",
-            isComplex: true,
+            isComplex: false,
           },
           {
             type: "int16",
             isArray: true,
             arrayUpperBound: 5,
             name: "bounded_short_values",
-            isComplex: true,
+            isComplex: false,
           },
           {
             type: "string",
             upperBound: 3,
             isArray: true,
             name: "unbounded_values_of_bounded_strings",
-            isComplex: true,
+            isComplex: false,
           },
           {
             type: "string",
@@ -491,14 +491,14 @@ module rosidl_parser {
             isArray: true,
             arrayUpperBound: 4,
             name: "bounded_values_of_bounded_strings",
-            isComplex: true,
+            isComplex: false,
           },
           {
             type: "int16",
             name: "array_short_values",
             isArray: true,
             arrayLength: 23,
-            isComplex: true,
+            isComplex: false,
           },
         ],
       },
@@ -545,6 +545,47 @@ module rosidl_parser {
             type: "uint32",
             name: "unsigned_long_value",
             isComplex: false,
+          },
+        ],
+      },
+    ]);
+  });
+  it("parses a module with customTypes", () => {
+    const types = parse(
+      `
+module rosidl_parser {
+  module msg {
+    struct MyMessage {
+      Point single_point;
+      Point points_with_length[10];
+      sequence<Point> points_with_length_sequence;
+    };
+  };
+};
+    `,
+      { ros2idl: true },
+    );
+    expect(types).toEqual([
+      {
+        name: "rosidl_parser::msg::MyMessage",
+        definitions: [
+          {
+            type: "Point",
+            name: "single_point",
+            isComplex: true,
+          },
+          {
+            type: "Point",
+            name: "points_with_length",
+            isArray: true,
+            arrayLength: 10,
+            isComplex: true,
+          },
+          {
+            type: "Point",
+            name: "points_with_length_sequence",
+            isArray: true,
+            isComplex: true,
           },
         ],
       },

@@ -175,14 +175,10 @@ fieldWithAnnotation -> annotationOrCommentLines fieldDcl {% d=> {
 } %}
 
 fieldDcl -> 
-     _ numericType __ fieldName arrayLength _  complex {% extend %}
-   | _ stringType __ fieldName arrayLength _ complex {% extend %}
-   | _ booleanType __ fieldName arrayLength _ complex {% extend %}
-   | _ numericType __ fieldName _  simple {% extend %}
-   | _ stringType __ fieldName _ simple {% extend %}
-   | _ booleanType __ fieldName _ simple {% extend %}
-   | _ sequenceType __ fieldName _ complex {% extend %}
-   | _ customType __ fieldName _ complex {% extend %}
+     _ allTypes __ fieldName arrayLength _ {% extend %}
+   | _ allTypes __ fieldName _  {% extend %}
+   | _ sequenceType __ fieldName _ {% extend %}
+   
    
    
 annotationOrCommentLines -> (annotation|comment):* {%
@@ -216,11 +212,11 @@ at -> "@" {% noop %}
 
 comment -> _ %COMMENT {% noop %}
 
-
 constType -> (
-     _ constKeyword __ numericType __ fieldName assignment _ simple
-   | _ constKeyword __ stringType __ fieldName assignment _ simple 
-   | _ constKeyword __ booleanType __ fieldName assignment _ simple
+     _ constKeyword __ numericType __ fieldName floatAssignment _ simple
+   | _ constKeyword __ numericType __ fieldName intAssignment _ simple
+   | _ constKeyword __ stringType __ fieldName stringAssignment _ simple
+   | _ constKeyword __ booleanType __ fieldName booleanAssignment _ simple
 ) {% d => {
 	const def = extend(d[0]);
 	const name = def.name;
@@ -234,7 +230,7 @@ constKeyword -> "const"  {% d => ({isConstant: true}) %}
 fieldName -> %NAME {% d => ({name: d[0].value}) %}
 
   
-sequenceType -> "sequence" _ "<" _ primitiveTypes _ ("," _ (INT|%NAME) _ ):? ">" {% d => {
+sequenceType -> "sequence" _ "<" _ allTypes _ ("," _ (INT|%NAME) _ ):? ">" {% d => {
 	const arrayUpperBound = d[6] !== null ? getIntOrConstantValue(d[6][2][0]) : undefined;
 	const typeObj = d[4];
 	return {
@@ -248,19 +244,30 @@ arrayLength -> "[" _ (INT|%NAME) _ "]" {%
   d => ({isArray: true, arrayLength: getIntOrConstantValue(d[2] ? d[2][0] : undefined) }) 
 %}
 
-assignment -> 
-    _ %EQ _ (SIGNED_FLOAT | FLOAT) {% ([_, __, ___,  num]) => ({valueText: num[0], value: parseFloat(num[0])}) %}
-  | _ %EQ _ (SIGNED_INT | INT) {% ([_, __,___,  num]) => ({valueText: num[0], value: parseInt(num[0])}) %}
-  | _ %EQ _ STR {% ([_, __, ___, str]) => ({valueText: str, value: str}) %}
-  | _ %EQ _ BOOLEAN {% ([_, __, ___, bool]) => ({valueText: bool, value: bool === "TRUE"}) %}
-  
+assignment -> (
+    floatAssignment
+  | intAssignment
+  | stringAssignment
+  | booleanAssignment
+) {% d => d[0][0] %}
+
+floatAssignment ->   _ %EQ _ (SIGNED_FLOAT | FLOAT) {% ([_, __, ___,  num]) => ({valueText: num[0], value: parseFloat(num[0])}) %}
+intAssignment -> _ %EQ _ (SIGNED_INT | INT) {% ([_, __,___,  num]) => ({valueText: num[0], value: parseInt(num[0])}) %}
+stringAssignment -> _ %EQ _ STR {% ([_, __, ___, str]) => ({valueText: str, value: str}) %}
+booleanAssignment -> _ %EQ _ BOOLEAN {% ([_, __, ___, bool]) => ({valueText: bool, value: bool === "TRUE"}) %}
+
+allTypes -> (
+    primitiveTypes
+  | customType
+) {% d => d[0][0] %}
+
 primitiveTypes -> (
     stringType
   | numericType
   | booleanType
-) {% d => id(id(d)) %}
+) {% d => ({...d[0][0], isComplex: false}) %}
 
-customType -> %NAME {% d => ({type: d[0].value }) %}
+customType -> %NAME {% d => ({type: d[0].value, isComplex: true }) %}
 
 stringType ->  ("string"|"wstring") (_ "<" _ (INT | %NAME) _ ">"):? {% d => {
 	let strLength = undefined;
@@ -368,12 +375,6 @@ _ -> (null | %SPACE) {% noop %}
 # Required whitespace
 __ -> %SPACE {% noop %}
 
-# Mark primitive types
-simple -> null {% function() { return { isComplex: false } } %}
-
-# Mark non-primitive types
-complex -> null {% function() { return { isComplex: true } } %}
-
-
+simple -> null {% () => ({isComplex: false}) %}
 
 
