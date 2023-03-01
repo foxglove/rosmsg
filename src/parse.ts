@@ -11,13 +11,17 @@ import { Grammar, Parser } from "nearley";
 
 import { buildRos2Type } from "./buildRos2Type";
 import ros1Rules from "./ros1.ne";
+import ros2idlRules from "./ros2idl.ne";
 import { RosMsgField, RosMsgDefinition } from "./types";
 
 const ROS1_GRAMMAR = Grammar.fromCompiled(ros1Rules);
+const ROS2IDL_GRAMMAR = Grammar.fromCompiled(ros2idlRules);
 
 export type ParseOptions = {
-  /** Parse message definitions as ROS2. Otherwise, parse as ROS1 */
+  /** Parse message definitions as ROS 2. Otherwise, parse as ROS1 */
   ros2?: boolean;
+  /** Parse message definitions in the ROS 2 subset of IDL */
+  ros2idl?: boolean;
   /**
    * Return the original type names used in the file, without normalizing to
    * fully qualified type names
@@ -43,6 +47,9 @@ export type ParseOptions = {
 //
 // See unit tests for more examples.
 export function parse(messageDefinition: string, options: ParseOptions = {}): RosMsgDefinition[] {
+  if (options.ros2idl) {
+    return buildRos2IdlType(messageDefinition, ROS2IDL_GRAMMAR);
+  }
   // read all the lines and remove empties
   const allLines = messageDefinition
     .split("\n")
@@ -96,6 +103,20 @@ export function fixupTypes(types: RosMsgDefinition[]): void {
       }
     });
   });
+}
+
+function buildRos2IdlType(messageDefinition: string, grammar: Grammar): RosMsgDefinition[] {
+  const parser = new Parser(grammar);
+  parser.feed(messageDefinition);
+  const results = parser.finish();
+
+  if (results.length === 0) {
+    throw new Error(
+      `Could not parse message definition (unexpected end of input): '${messageDefinition}'`,
+    );
+  }
+  const result = results[0] as RosMsgDefinition[];
+  return result;
 }
 
 function buildType(lines: { line: string }[], grammar: Grammar): RosMsgDefinition {
