@@ -333,12 +333,12 @@ module rosidl_parser {
             isComplex: false,
           },
           {
-            type: "char",
+            type: "uint8",
             name: "char_value",
             isComplex: false,
           },
           {
-            type: "char",
+            type: "uint8",
             name: "wchar_value",
             isComplex: false,
           },
@@ -348,7 +348,7 @@ module rosidl_parser {
             isComplex: false,
           },
           {
-            type: "byte",
+            type: "int8",
             name: "octet_value",
             isComplex: false,
           },
@@ -717,12 +717,21 @@ module rosidl_parser {
 
   it("can parse comments", () => {
     const msgDef = ` 
-      // this is a comment
+      // All of these comments should be ignored
       module action {
+        /** another comment */
         module MyAction_Goal_Constants {
+          // two here of the same type
+          // _another one_
           const string tricky = "/** is this a comment? */ // hopefully not";
         };
+        /** a multi
+         * line
+         * comment
+         */
         struct MyAction_Goal {
+          // two here of different types
+          /** maybe one more that */
           int32 input_value;
         };
       };

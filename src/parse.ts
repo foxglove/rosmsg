@@ -20,7 +20,9 @@ const ROS2IDL_GRAMMAR = Grammar.fromCompiled(ros2idlRules);
 export type ParseOptions = {
   /** Parse message definitions as ROS 2. Otherwise, parse as ROS1 */
   ros2?: boolean;
-  /** Parse message definitions in the ROS 2 subset of IDL */
+  /** Parse message definitions in the ROS 2 subset of IDL.
+   * Ignores ros2 and skipTypeFixup option value.
+   */
   ros2idl?: boolean;
   /**
    * Return the original type names used in the file, without normalizing to
@@ -47,7 +49,8 @@ export type ParseOptions = {
 //
 // See unit tests for more examples.
 export function parse(messageDefinition: string, options: ParseOptions = {}): MessageDefinition[] {
-  if (options.ros2idl) {
+  if (options.ros2idl === true) {
+    // ros2idl grammar takes message definition as a single string
     return buildRos2IdlType(messageDefinition, ROS2IDL_GRAMMAR);
   }
   // read all the lines and remove empties
@@ -116,6 +119,11 @@ function buildRos2IdlType(messageDefinition: string, grammar: Grammar): MessageD
     );
   }
   const result = results[0] as MessageDefinition[];
+  result.forEach(({ definitions }) => {
+    definitions.forEach((definition) => {
+      definition.type = normalizeType(definition.type);
+    });
+  });
   return result;
 }
 
