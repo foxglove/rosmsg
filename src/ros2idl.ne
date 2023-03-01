@@ -128,7 +128,7 @@ function processConstantModule(d) {
   // need to return array here to keep same signature as processComplexModule
 	return [{
 		name: moduleName,
-		definitions: enclosedConstants.flatMap(d => d),
+		definitions: enclosedConstants.flat(1),
 	}];
 }
 
@@ -156,7 +156,7 @@ structWithAnnotation -> (comment|annotation):* struct {%
 
 struct -> _ "struct" __ fieldName __ "{" __ (declaration):+ __ "}" semi {% d => {
 	const name = d[3].name;
-	const definitions = d[7].flatMap(d => d).filter(def => def !== null);
+	const definitions = d[7].flat(2).filter(def => def !== null);
 	return {
 		name,
 		definitions,
@@ -171,13 +171,28 @@ fieldWithAnnotation -> annotationOrCommentLines fieldDcl {% d=> {
 	if(d[0]) {
 		possibleAnnotations = d[0];
 	}
-	return extend([...possibleAnnotations, d[1]]);
+  const fields = d[1];
+	const finalDefs = fields.map((def) => extend([...possibleAnnotations, def]));
+	return finalDefs;
 } %}
 
-fieldDcl -> 
-     _ allTypes __ fieldName arrayLength _ {% extend %}
-   | _ allTypes __ fieldName _  {% extend %}
-   | _ sequenceType __ fieldName _ {% extend %}
+fieldDcl -> (
+     _ allTypes __  multiFieldNames arrayLength _
+   | _ allTypes __ multiFieldNames _
+   | _ sequenceType __ multiFieldNames _
+ ) {% (d) => {
+	const names = d[0].splice(3, 1)[0];
+	// create a definition for each name
+	const defs = names.map((nameObj) => extend([...d[0], nameObj]));
+	return defs
+} %}
+
+multiFieldNames -> fieldName (_ "," __ fieldName):* {%
+ d => {
+	 const fieldNames = d.flat(2).filter( d => d !== null && d.name);
+	 return fieldNames;
+ }
+%}
    
    
    
@@ -349,7 +364,7 @@ BOOLEAN -> ("TRUE" | "FALSE") {% join %}
 
 # need to support mutliple adjacent strings as a single string
 STR -> (%STRING _):+  {% d => {
-	return join(d[0].flatMap(d => d).filter(d => d !== null));
+	return join(d[0].flat(1).filter(d => d !== null));
 }%}
 
 # Not actually used due to needing to parse either an int or float from a string

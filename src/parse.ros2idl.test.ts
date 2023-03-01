@@ -821,16 +821,42 @@ module rosidl_parser {
       },
     ]);
   });
-
-  /****************  Not yet supported but part of IDL */
-  it("cannot parse multiple declarations in a single line", () => {
+  it("can parse multiple forward declarations on same line with default annotation", () => {
+    const msgDef = ` 
+    module action {
+      struct MyAction_Goal {
+        @default(value=5)
+        int32 int1, int2;
+      };
+    };
+    `;
+    const types = parse(msgDef, { ros2idl: true });
+    expect(types).toEqual([
+      {
+        definitions: [
+          {
+            defaultValue: 5,
+            isComplex: false,
+            name: "int1",
+            type: "int32",
+          },
+          {
+            defaultValue: 5,
+            isComplex: false,
+            name: "int2",
+            type: "int32",
+          },
+        ],
+        name: "action::MyAction_Goal",
+      },
+    ]);
+  });
+  /****************  Not supported by IDL (as far as I can tell) */
+  it("cannot parse multiple const declarations in a single line", () => {
     const msgDef = ` 
       module action {
         module MyAction_Goal_Constants {
           const short short1, short2 = -23;
-        };
-        struct MyAction_Goal {
-          int32 input_value;
         };
       };
     `;
