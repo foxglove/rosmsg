@@ -7,12 +7,12 @@
 //   found at http://www.apache.org/licenses/LICENSE-2.0
 //   You may not use this file except in compliance with the License.
 
+import { MessageDefinition, MessageDefinitionField } from "@foxglove/message-definition";
 import { Grammar, Parser } from "nearley";
 
 import { buildRos2Type } from "./buildRos2Type";
 import ros1Rules from "./ros1.ne";
 import ros2idlRules from "./ros2idl.ne";
-import { RosMsgField, RosMsgDefinition } from "./types";
 
 const ROS1_GRAMMAR = Grammar.fromCompiled(ros1Rules);
 const ROS2IDL_GRAMMAR = Grammar.fromCompiled(ros2idlRules);
@@ -46,7 +46,7 @@ export type ParseOptions = {
 // }, ... ]
 //
 // See unit tests for more examples.
-export function parse(messageDefinition: string, options: ParseOptions = {}): RosMsgDefinition[] {
+export function parse(messageDefinition: string, options: ParseOptions = {}): MessageDefinition[] {
   if (options.ros2idl) {
     return buildRos2IdlType(messageDefinition, ROS2IDL_GRAMMAR);
   }
@@ -57,7 +57,7 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Ro
     .filter((line) => line);
 
   let definitionLines: { line: string }[] = [];
-  const types: RosMsgDefinition[] = [];
+  const types: MessageDefinition[] = [];
   // group lines into individual definitions
   allLines.forEach((line) => {
     // ignore comment lines
@@ -91,7 +91,7 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Ro
   return types;
 }
 
-export function fixupTypes(types: RosMsgDefinition[]): void {
+export function fixupTypes(types: MessageDefinition[]): void {
   types.forEach(({ definitions }) => {
     definitions.forEach((definition) => {
       if (definition.isComplex === true) {
@@ -105,7 +105,7 @@ export function fixupTypes(types: RosMsgDefinition[]): void {
   });
 }
 
-function buildRos2IdlType(messageDefinition: string, grammar: Grammar): RosMsgDefinition[] {
+function buildRos2IdlType(messageDefinition: string, grammar: Grammar): MessageDefinition[] {
   const parser = new Parser(grammar);
   parser.feed(messageDefinition);
   const results = parser.finish();
@@ -115,12 +115,12 @@ function buildRos2IdlType(messageDefinition: string, grammar: Grammar): RosMsgDe
       `Could not parse message definition (unexpected end of input): '${messageDefinition}'`,
     );
   }
-  const result = results[0] as RosMsgDefinition[];
+  const result = results[0] as MessageDefinition[];
   return result;
 }
 
-function buildType(lines: { line: string }[], grammar: Grammar): RosMsgDefinition {
-  const definitions: RosMsgField[] = [];
+function buildType(lines: { line: string }[], grammar: Grammar): MessageDefinition {
+  const definitions: MessageDefinitionField[] = [];
   let complexTypeName: string | undefined;
   lines.forEach(({ line }) => {
     if (line.startsWith("MSG:")) {
@@ -131,13 +131,13 @@ function buildType(lines: { line: string }[], grammar: Grammar): RosMsgDefinitio
 
     const parser = new Parser(grammar);
     parser.feed(line);
-    const results = parser.finish();
+    const results = parser.finish() as MessageDefinitionField[];
     if (results.length === 0) {
       throw new Error(`Could not parse line: '${line}'`);
     } else if (results.length > 1) {
       throw new Error(`Ambiguous line: '${line}'`);
     }
-    const result = results[0] as RosMsgField;
+    const result = results[0];
     if (result != undefined) {
       result.type = normalizeType(result.type);
       definitions.push(result);
@@ -153,7 +153,7 @@ function simpleTokenization(line: string): string[] {
     .filter((word) => word);
 }
 
-function findTypeByName(types: RosMsgDefinition[], name: string): RosMsgDefinition {
+function findTypeByName(types: MessageDefinition[], name: string): MessageDefinition {
   const matches = types.filter((type) => {
     const typeName = type.name ?? "";
     // if the search is empty, return unnamed types
