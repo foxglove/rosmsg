@@ -556,6 +556,8 @@ module rosidl_parser {
       module rosidl_parser {
         module msg {
           struct MyMessage {
+            @default ( value=1.9e10 )
+            float int_and_frac_with_positive_scientific;
             @default ( value=1.9e+10 )
             float int_and_frac_with_explicit_positive_scientific;
             @default ( value=1.1e-10)
@@ -566,6 +568,8 @@ module rosidl_parser {
             float int_with_empty_frac;
             @default ( value = .1 )
             float frac_only;
+            @default ( value=9e05 )
+            float int_with_positive_scientific;
             @default ( value=9e+05 )
             float int_with_explicit_positive_scientific;
             @default ( value=9e-05 )
@@ -588,6 +592,12 @@ module rosidl_parser {
       {
         name: "rosidl_parser::msg::MyMessage",
         definitions: [
+          {
+            defaultValue: 19000000000,
+            type: "float32",
+            name: "int_and_frac_with_positive_scientific",
+            isComplex: false,
+          },
           {
             defaultValue: 19000000000,
             type: "float32",
@@ -616,6 +626,12 @@ module rosidl_parser {
             defaultValue: 0.1,
             type: "float32",
             name: "frac_only",
+            isComplex: false,
+          },
+          {
+            defaultValue: 900000,
+            type: "float32",
+            name: "int_with_positive_scientific",
             isComplex: false,
           },
           {
@@ -779,21 +795,6 @@ module rosidl_parser {
     `;
     expect(() => parse(msgDef, { ros2idl: true })).toThrow(/unexpected , token: ","/i);
   });
-  it("cannot parse exponents without signs", () => {
-    const msgDef = ` 
-      module action {
-        module MyAction_Goal_Constants {
-          const short short1  = -23;
-        };
-        struct MyAction_Goal {
-          @default( value=1.0e3 )
-          int32 input_value;
-        };
-      };
-    `;
-    expect(() => parse(msgDef, { ros2idl: true })).toThrow(/unexpected name token: "e3"/i);
-  });
-
   /****************  Syntax Errors */
   it("missing bracket at the end will result in end of input error", () => {
     const msgDef = ` 

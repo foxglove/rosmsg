@@ -43,7 +43,9 @@ const moo = require("moo");
 // Terminal tokens are in all caps
 const lexer = moo.compile({
   SPACE: {match: /\s+/, lineBreaks: true},
-  DIGIT: /[0-9]/,
+  DECIMALEXP: /(?:(?:\d+\.\d*)|(?:\d*\.\d+)|(?:[0-9]+))[eE](?:[+|-])?[0-9]+/,
+  DECIMAL: /(?:(?:\d+\.\d*)|(?:\d*\.\d+))/,
+  INTEGER: /[0-9]+/,
   COMMENT: /(?:\/\/[^\n]*)|(?:\/\*(?:.|\n)+?\*\/)/,
   HEX_LITERAL: /0x(?:[0-9][a-f][A-F])+?/,
   STRING: [{match: /"(?:\\["\\rnu]|[^"\\])*?"/, lineBreaks: true, value: x => x.slice(1, -1)}], // remove outside quotes
@@ -67,6 +69,8 @@ const lexer = moo.compile({
 });
 
 // Utiility functions
+
+// also used to parse tokens to strings since they start as an object
 function join(d){
 	return d.join("");
 }
@@ -346,23 +350,14 @@ NUMBER -> (SIGNED_FLOAT | SIGNED_INT | FLOAT | INT)  {% join %}
 
 SIGNED_FLOAT -> ("+"|"-") FLOAT {% join %}
 
-FLOAT -> 
-   (INT _EXP) {% d => join(d[0]) %}
- | (DECIMAL _EXP:?) {% d => join(d[0]) %}
- | (DECIMAL  "d") {% (d) => d[0][0] %} # ignore d since it can't be used for parseFloat
- | (INT  "d") {% (d) => d[0][0] %} # ignore d
+FLOAT -> (%DECIMAL|%DECIMALEXP) {% join %}
+ | (%DECIMAL "d") {% d => d[0][0].value %}
+ | (INT "d") {% d => d[0][0] %}
 
-_EXP -> ("e"|"E") (SIGNED_INT|INT) {% d => {
-	return d.flatMap(d=>d).join("");
-} %}
-
-DECIMAL -> 
-  (INT "." INT:?)  {% (d) => join(d[0])  %}
-| ("." INT) {% (d) => join(d[0]) %}
 
 SIGNED_INT -> ("+"|"-") INT  {% join %}
 
-INT -> %DIGIT:+ {% ([digits]) => join(digits) %}
+INT -> %INTEGER {% join %}
 
 semi -> ";" {% noop %}
 
