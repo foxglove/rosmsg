@@ -510,7 +510,7 @@ module rosidl_parser {
       @range ( min=-10, max=10 )
       long long_value;
       @verbatim (language="comment", text="")
-      unsigned long unsigned_long_value;
+      @key unsigned long unsigned_long_value;
     };
   };
 };
@@ -768,10 +768,10 @@ module rosidl_parser {
       // All of these comments should be ignored
       module action {
         /** another comment */
-        module MyAction_Goal_Constants {
+        module MyAction_Goal_Constants /** maybe a sneaky one here */ {
           // two here of the same type
           // _another one_
-          const string tricky = "/** is this a comment? */ // hopefully not";
+          const string tricky = "/** is this a comment? */ // hopefully not"; // like I'm not even here
         };
         /** a multi
          * line
@@ -780,7 +780,7 @@ module rosidl_parser {
         struct MyAction_Goal {
           // two here of different types
           /** maybe one more that */
-          int32 input_value;
+          int32 input_value; /** inline */
         };
       };
     `;

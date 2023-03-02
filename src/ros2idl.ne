@@ -68,6 +68,15 @@ const lexer = moo.compile({
   NAME: {match: /[a-zA-Z_][a-zA-Z0-9_]*(?:\:\:[a-zA-Z][a-zA-Z0-9_]*)*/, type: moo.keywords(kwObject)},
 });
 
+// Ignore whitespace and comment tokens
+const tokensToIgnore = ['SPACE', 'COMMENT'];
+// requires us to override the lexer's next function 
+lexer.next = (next => () => {
+  let token;
+  while ((token = next.call(lexer)) && tokensToIgnore.includes(token.type)) {}
+  return token;
+})(lexer.next);
+
 // Utiility functions
 
 const numericTypeMap = {
@@ -113,8 +122,8 @@ function getIntOrConstantValue(d) {
 }
 
 function processComplexModule(d) {
-  const moduleName = d[0][4].name;
-  const defs = d[0][8];
+  const moduleName = d[0][2].name;
+  const defs = d[0][4];
   // returning array of message definitions
   const msgDefs = [];
   function traverse(node, processNode) {
@@ -137,8 +146,8 @@ function processComplexModule(d) {
 }
 
 function processConstantModule(d) {
-  const moduleName = d[0][4].name;
-  const enclosedConstants = d[0][8];
+  const moduleName = d[0][2].name;
+  const enclosedConstants = d[0][4];
   // need to return array here to keep same signature as processComplexModule
   return [{
     name: moduleName,
@@ -150,37 +159,37 @@ function processConstantModule(d) {
 
 @lexer lexer
 
-main -> (importDcl __):* module:+ _ {% d => {
+main -> importDcl:* module:+ {% d => {
   return d[1][0];
 }
 %}
 
 # support <import> or "import" includes - just ignored
-importDcl -> _ "#" "include" __ (%STRING | "<" _ %NAME ("/" %NAME):* "." "idl" _ ">") {% noop %}
+importDcl -> "#" "include" (%STRING | "<" %NAME ("/" %NAME):* "." "idl" ">") {% noop %}
 
 # constant modules need to be separate from complex modules since they shouldn't mix
-module  -> ((comment|annotation):* _ "module" __ fieldName __ "{" __ (constantDcl):+ __ "}" semi) {% processConstantModule %}
-  | ((comment|annotation):* _ "module" __ fieldName __ "{" __ (structWithAnnotation|module):+ __ "}" semi) {% processComplexModule %}
+module  -> (multiAnnotations "module" fieldName "{" (constantDcl):+ "}" semi) {% processConstantModule %}
+  | (multiAnnotations "module" fieldName "{" (structWithAnnotation|module):+ "}" semi) {% processComplexModule %}
 
 
-structWithAnnotation -> (comment|annotation):* struct {% 
+structWithAnnotation -> multiAnnotations struct {% 
  // ignore annotations on structs because we can only read default value (which doesn't apply)
  d => {return d[1];}
 %}
 
-struct -> _ "struct" __ fieldName __ "{" __ (declaration):+ __ "}" semi {% d => {
-  const name = d[3].name;
-  const definitions = d[7].flat(2).filter(def => def !== null);
+struct -> "struct" fieldName "{" (declaration):+ "}" semi {% d => {
+  const name = d[1].name;
+  const definitions = d[3].flat(2).filter(def => def !== null);
   return {
     name,
     definitions,
   };
 } %}
 
-constantDcl -> (comment|annotation):* constType semi {% d => d[1] %}
+constantDcl -> multiAnnotations constType semi {% d => d[1] %}
 declaration -> fieldWithAnnotation semi {% d => d[0] %}
 
-fieldWithAnnotation -> annotationOrCommentLines fieldDcl {% d=> {
+fieldWithAnnotation -> multiAnnotations fieldDcl {% d=> {
   let possibleAnnotations = [];
   if(d[0]) {
     possibleAnnotations = d[0];
@@ -191,28 +200,26 @@ fieldWithAnnotation -> annotationOrCommentLines fieldDcl {% d=> {
 } %}
 
 fieldDcl -> (
-     _ allTypes __  multiFieldNames arrayLength _
-   | _ allTypes __ multiFieldNames _
-   | _ sequenceType __ multiFieldNames _
+     allTypes  multiFieldNames arrayLength
+   | allTypes multiFieldNames
+   | sequenceType multiFieldNames
  ) {% (d) => {
-  const names = d[0].splice(3, 1)[0];
+  const names = d[0].splice(1, 1)[0];
   // create a definition for each name
   const defs = names.map((nameObj) => extend([...d[0], nameObj]));
   return defs
 } %}
 
-multiFieldNames -> fieldName (_ "," __ fieldName):* {%
+multiFieldNames -> fieldName ("," fieldName):* {%
  d => {
    const fieldNames = d.flat(2).filter( d => d !== null && d.name);
    return fieldNames;
  }
 %}
    
-   
-   
-annotationOrCommentLines -> (annotation|comment):* {%
+multiAnnotations -> annotation:* {%
   d => {
-    return d[0][0] ? d[0][0].filter(d => d !== null) : null;
+    return d[0] ? d[0].filter(d => d !== null) : null;
   }
 %}
 
@@ -225,29 +232,27 @@ annotation -> (
   ) {% d => id(id(d)) %}
 
 # ROS 2 spec only supports annotations mentioned here https://design.ros2.org/articles/idl_interface_definition.html 
-defaultAnnotation -> _ at "default" _ "(" _ "value" assignment _ ")" {% d => { 
-  return {defaultValue: d[7].value };
+defaultAnnotation -> at "default" "(" "value" assignment ")" {% d => { 
+  return {defaultValue: d[4].value };
 } %}
 
 # These annotations will not cause errors, but are ignored in the message definition AST
 # We can't support generic annotations because it would make this grammar ambiguous (give it multiple ways to parse the same input)
-rangeAnnotation -> _ at "range" _ "(" _ "min" assignment _ "," _ "max" assignment _ ")" {% noop %}
+rangeAnnotation -> at "range" "(" "min" assignment "," "max" assignment ")" {% noop %}
 
-commentAnnotation -> _ at "verbatim" _ "(" _ "language" assignment _ "," _ "text" _ %EQ _ STR ")" {% noop %}
+commentAnnotation -> at "verbatim" "(" "language" assignment "," "text" %EQ STR ")" {% noop %}
 
-keyAnnotation -> _ at "key" {% noop %}
+keyAnnotation -> at "key" {% noop %}
 
-transferModeAnnotation -> _ at "transfer_mode" _ "(" _ %NAME _ ")" {% noop %}
+transferModeAnnotation -> at "transfer_mode" "(" %NAME ")" {% noop %}
 
 at -> "@" {% noop %}
 
-comment -> _ %COMMENT {% noop %}
-
 constType -> (
-     _ constKeyword __ numericType __ fieldName floatAssignment _ simple
-   | _ constKeyword __ numericType __ fieldName intAssignment _ simple
-   | _ constKeyword __ stringType __ fieldName stringAssignment _ simple
-   | _ constKeyword __ booleanType __ fieldName booleanAssignment _ simple
+     constKeyword numericType fieldName floatAssignment simple
+   | constKeyword numericType fieldName intAssignment simple
+   | constKeyword stringType fieldName stringAssignment simple
+   | constKeyword booleanType fieldName booleanAssignment simple
 ) {% d => {
   const def = extend(d[0]);
   const name = def.name;
@@ -261,9 +266,9 @@ constKeyword -> "const"  {% d => ({isConstant: true}) %}
 fieldName -> %NAME {% d => ({name: d[0].value}) %}
 
   
-sequenceType -> "sequence" _ "<" _ allTypes _ ("," _ (INT|%NAME) _ ):? ">" {% d => {
-  const arrayUpperBound = d[6] !== null ? getIntOrConstantValue(d[6][2][0]) : undefined;
-  const typeObj = d[4];
+sequenceType -> "sequence" "<" allTypes ("," (INT|%NAME) ):? ">" {% d => {
+  const arrayUpperBound = d[3] !== null ? getIntOrConstantValue(d[3][1][0]) : undefined;
+  const typeObj = d[2];
   return {
     ...typeObj,
     isArray: true, 
@@ -271,8 +276,8 @@ sequenceType -> "sequence" _ "<" _ allTypes _ ("," _ (INT|%NAME) _ ):? ">" {% d 
   };
 }%}
 
-arrayLength -> "[" _ (INT|%NAME) _ "]" {%
-  d => ({isArray: true, arrayLength: getIntOrConstantValue(d[2] ? d[2][0] : undefined) }) 
+arrayLength -> "[" (INT|%NAME) "]" {%
+  ([, intOrName]) => ({isArray: true, arrayLength: getIntOrConstantValue(intOrName ? intOrName[0] : undefined) }) 
 %}
 
 assignment -> (
@@ -282,10 +287,10 @@ assignment -> (
   | booleanAssignment
 ) {% d => d[0][0] %}
 
-floatAssignment ->   _ %EQ _ (SIGNED_FLOAT | FLOAT) {% ([_, __, ___,  num]) => ({valueText: num[0], value: parseFloat(num[0])}) %}
-intAssignment -> _ %EQ _ (SIGNED_INT | INT) {% ([_, __,___,  num]) => ({valueText: num[0], value: parseInt(num[0])}) %}
-stringAssignment -> _ %EQ _ STR {% ([_, __, ___, str]) => ({valueText: str, value: str}) %}
-booleanAssignment -> _ %EQ _ BOOLEAN {% ([_, __, ___, bool]) => ({valueText: bool, value: bool === "TRUE"}) %}
+floatAssignment ->   %EQ (SIGNED_FLOAT | FLOAT) {% ([, num]) => ({valueText: num[0], value: parseFloat(num[0])}) %}
+intAssignment -> %EQ (SIGNED_INT | INT) {% ([, num]) => ({valueText: num[0], value: parseInt(num[0])}) %}
+stringAssignment -> %EQ STR {% ([, str]) => ({valueText: str, value: str}) %}
+booleanAssignment -> %EQ BOOLEAN {% ([, bool]) => ({valueText: bool, value: bool === "TRUE"}) %}
 
 allTypes -> (
     primitiveTypes
@@ -300,10 +305,10 @@ primitiveTypes -> (
 
 customType -> %NAME {% d => ({type: d[0].value, isComplex: true }) %}
 
-stringType ->  ("string"|"wstring") (_ "<" _ (INT | %NAME) _ ">"):? {% d => {
+stringType ->  ("string"|"wstring") ("<" (INT | %NAME) ">"):? {% d => {
   let strLength = undefined;
   if(d[1] !== null) {
-    strLength = getIntOrConstantValue(d[1][3] ? d[1][3][0] : undefined);
+    strLength = getIntOrConstantValue(d[1][1] ? d[1][1][0] : undefined);
   }
   return {type: "string", upperBound: strLength};
 } %}
@@ -315,7 +320,7 @@ numericType -> (
   | "octet"
   | "wchar"
   | "char"
-  | "long" __ "double"
+  | "long" "double"
   | "double"
   | "float"
   | "int8"
@@ -326,11 +331,11 @@ numericType -> (
   | "uint32"
   | "int64"
   | "uint64"
-  | "unsigned" __ "short"
+  | "unsigned" "short"
   | "short"
-  | "unsigned" __ "long" __ "long"
-  | "long" __ "long"
-  | "unsigned" __ "long"
+  | "unsigned" "long" "long"
+  | "long" "long"
+  | "unsigned" "long"
   | "long" 
 ) {% (d) => { 
   const typeString = d[0].map((t) => t?.value).filter(t => !!t).join(" ");
@@ -344,8 +349,8 @@ numericType -> (
 BOOLEAN -> ("TRUE" | "FALSE") {% join %}
 
 # need to support mutliple adjacent strings as a single string
-STR -> (%STRING _):+  {% d => {
-  return join(d[0].flat(1).filter(d => d !== null));
+STR -> %STRING:+  {% d => {
+  return join(d.flat(1).filter(d => d !== null));
 }%}
 
 SIGNED_FLOAT -> ("+"|"-") FLOAT {% join %}
@@ -361,13 +366,6 @@ SIGNED_INT -> ("+"|"-") INT  {% join %}
 INT -> %INTEGER {% join %}
 
 semi -> ";" {% noop %}
-
-
-# Optional whitespace
-_ -> %SPACE:? {% noop %}
-
-# Required whitespace
-__ -> %SPACE {% noop %}
 
 simple -> null {% () => ({isComplex: false}) %}
 
