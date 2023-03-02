@@ -119,7 +119,7 @@ Prints:
 
 ## License
 
-@foxglove/rosmsg is licensed under [MIT License](https://opensource.org/licenses/MIT).
+@foxglove/rosmsg is licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
 ## Releasing
 
