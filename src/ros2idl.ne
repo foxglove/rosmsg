@@ -63,7 +63,7 @@ const lexer = moo.compile({
   PND: '#',
   PT: ".",
   '/': "/",
-  SIGN: /[+|-]/,
+  SIGN: /[+-]/,
   EQ: /=[^\n]*?/,
   NAME: {match: /[a-zA-Z_][a-zA-Z0-9_]*(?:\:\:[a-zA-Z][a-zA-Z0-9_]*)*/, type: moo.keywords(kwObject)},
 });
