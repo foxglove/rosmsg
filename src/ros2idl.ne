@@ -13,7 +13,7 @@ const keywords = [
   , "wstring"
   , "string"
   , "sequence"
-	
+  
   // numeric types
   , "byte"
   , "octet"
@@ -35,8 +35,8 @@ const keywords = [
 ];
 
 const kwObject = keywords.reduce((obj, w) => {
-	obj[w] = w;
-	return obj;
+  obj[w] = w;
+  return obj;
 }, {});
 
 const moo = require("moo");
@@ -47,8 +47,8 @@ const lexer = moo.compile({
   DECIMAL: /(?:(?:\d+\.\d*)|(?:\d*\.\d+))/,
   INTEGER: /\d+/,
   COMMENT: /(?:\/\/[^\n]*)|(?:\/\*(?:.|\n)+?\*\/)/,
-  HEX_LITERAL: /0x(?:[0-9][a-f][A-F])+?/,
-  STRING: [{match: /"(?:\\["\\rnu]|[^"\\])*?"/, lineBreaks: true, value: x => x.slice(1, -1)}], // remove outside quotes
+  HEX_LITERAL: /0x(?:[0-9a-fA-F])+?/,
+  STRING: {match: /"(?:\\["\\rnu]|[^"\\])*"/, value: x => x.slice(1, -1)}, // remove outside quotes
   LCBR: '{',
   RCBR: '}',
   LBR: '[',
@@ -70,9 +70,23 @@ const lexer = moo.compile({
 
 // Utiility functions
 
+const numericTypeMap = {
+  "unsigned short": "uint16",
+  "unsigned long": "uint32",
+  "unsigned long long": "uint64",
+  "short": "int16",
+  "long": "int32",
+  "long long": "int64",
+  "double": "float32",
+  "float": "float32",
+  "long double": "float64",
+  "octet": "byte",
+  "wchar": "char",
+};
+
 // also used to parse tokens to strings since they start as an object
 function join(d){
-	return d.join("");
+  return d.join("");
 }
 
 // used for combining AST components
@@ -81,7 +95,7 @@ function extend(objs) {
 }
 
 function noop() {
-	return null;
+  return null;
 }
 
 // Constants can be used in defs to define lengths of arrays and strings
@@ -89,13 +103,13 @@ function noop() {
 const constantToValueMap = {};
 
 function getIntOrConstantValue(d) {
-	const int = parseInt(d);
-	if(!isNaN(int)) {
-		return int
-	}
+  const int = parseInt(d);
+  if(!isNaN(int)) {
+    return int
+  }
 
-	// handle %NAME value
-	return d?.value ? constantToValueMap[d.value] : undefined;	
+  // handle %NAME token
+  return d?.value ? constantToValueMap[d.value] : undefined;  
 }
 
 function processComplexModule(d) {
@@ -123,13 +137,13 @@ function processComplexModule(d) {
 }
 
 function processConstantModule(d) {
-	const moduleName = d[0][4].name;
+  const moduleName = d[0][4].name;
   const enclosedConstants = d[0][8];
   // need to return array here to keep same signature as processComplexModule
-	return [{
-		name: moduleName,
-		definitions: enclosedConstants.flat(1),
-	}];
+  return [{
+    name: moduleName,
+    definitions: enclosedConstants.flat(1),
+  }];
 }
 
 %}
@@ -137,7 +151,7 @@ function processConstantModule(d) {
 @lexer lexer
 
 main -> (importDcl __):* module:+ _ {% d => {
-	return d[1][0];
+  return d[1][0];
 }
 %}
 
@@ -155,25 +169,25 @@ structWithAnnotation -> (comment|annotation):* struct {%
 %}
 
 struct -> _ "struct" __ fieldName __ "{" __ (declaration):+ __ "}" semi {% d => {
-	const name = d[3].name;
-	const definitions = d[7].flat(2).filter(def => def !== null);
-	return {
-		name,
-		definitions,
-	};
+  const name = d[3].name;
+  const definitions = d[7].flat(2).filter(def => def !== null);
+  return {
+    name,
+    definitions,
+  };
 } %}
 
 constantDcl -> (comment|annotation):* constType semi {% d => d[1] %}
 declaration -> fieldWithAnnotation semi {% d => d[0] %}
 
 fieldWithAnnotation -> annotationOrCommentLines fieldDcl {% d=> {
-	let possibleAnnotations = [];
-	if(d[0]) {
-		possibleAnnotations = d[0];
-	}
+  let possibleAnnotations = [];
+  if(d[0]) {
+    possibleAnnotations = d[0];
+  }
   const fields = d[1];
-	const finalDefs = fields.map((def) => extend([...possibleAnnotations, def]));
-	return finalDefs;
+  const finalDefs = fields.map((def) => extend([...possibleAnnotations, def]));
+  return finalDefs;
 } %}
 
 fieldDcl -> (
@@ -181,16 +195,16 @@ fieldDcl -> (
    | _ allTypes __ multiFieldNames _
    | _ sequenceType __ multiFieldNames _
  ) {% (d) => {
-	const names = d[0].splice(3, 1)[0];
-	// create a definition for each name
-	const defs = names.map((nameObj) => extend([...d[0], nameObj]));
-	return defs
+  const names = d[0].splice(3, 1)[0];
+  // create a definition for each name
+  const defs = names.map((nameObj) => extend([...d[0], nameObj]));
+  return defs
 } %}
 
 multiFieldNames -> fieldName (_ "," __ fieldName):* {%
  d => {
-	 const fieldNames = d.flat(2).filter( d => d !== null && d.name);
-	 return fieldNames;
+   const fieldNames = d.flat(2).filter( d => d !== null && d.name);
+   return fieldNames;
  }
 %}
    
@@ -198,7 +212,7 @@ multiFieldNames -> fieldName (_ "," __ fieldName):* {%
    
 annotationOrCommentLines -> (annotation|comment):* {%
   d => {
-	  return d[0][0] ? d[0][0].filter(d => d !== null) : null;
+    return d[0][0] ? d[0][0].filter(d => d !== null) : null;
   }
 %}
 
@@ -210,11 +224,13 @@ annotation -> (
   | transferModeAnnotation
   ) {% d => id(id(d)) %}
 
+# ROS 2 spec only supports annotations mentioned here https://design.ros2.org/articles/idl_interface_definition.html 
 defaultAnnotation -> _ at "default" _ "(" _ "value" assignment _ ")" {% d => { 
-	return {defaultValue: d[7].value };
+  return {defaultValue: d[7].value };
 } %}
 
-# unsupported annotations are ignored
+# These annotations will not cause errors, but are ignored in the message definition AST
+# We can't support generic annotations because it would make this grammar ambiguous (give it multiple ways to parse the same input)
 rangeAnnotation -> _ at "range" _ "(" _ "min" assignment _ "," _ "max" assignment _ ")" {% noop %}
 
 commentAnnotation -> _ at "verbatim" _ "(" _ "language" assignment _ "," _ "text" _ %EQ _ STR ")" {% noop %}
@@ -233,11 +249,11 @@ constType -> (
    | _ constKeyword __ stringType __ fieldName stringAssignment _ simple
    | _ constKeyword __ booleanType __ fieldName booleanAssignment _ simple
 ) {% d => {
-	const def = extend(d[0]);
-	const name = def.name;
-	const value = def.value;
-	constantToValueMap[name] = value;
-	return def;
+  const def = extend(d[0]);
+  const name = def.name;
+  const value = def.value;
+  constantToValueMap[name] = value;
+  return def;
 } %}
 
 constKeyword -> "const"  {% d => ({isConstant: true}) %}
@@ -246,13 +262,13 @@ fieldName -> %NAME {% d => ({name: d[0].value}) %}
 
   
 sequenceType -> "sequence" _ "<" _ allTypes _ ("," _ (INT|%NAME) _ ):? ">" {% d => {
-	const arrayUpperBound = d[6] !== null ? getIntOrConstantValue(d[6][2][0]) : undefined;
-	const typeObj = d[4];
-	return {
-	  ...typeObj,
-	  isArray: true, 
-	  arrayUpperBound,
-	};
+  const arrayUpperBound = d[6] !== null ? getIntOrConstantValue(d[6][2][0]) : undefined;
+  const typeObj = d[4];
+  return {
+    ...typeObj,
+    isArray: true, 
+    arrayUpperBound,
+  };
 }%}
 
 arrayLength -> "[" _ (INT|%NAME) _ "]" {%
@@ -285,16 +301,15 @@ primitiveTypes -> (
 customType -> %NAME {% d => ({type: d[0].value, isComplex: true }) %}
 
 stringType ->  ("string"|"wstring") (_ "<" _ (INT | %NAME) _ ">"):? {% d => {
-	let strLength = undefined;
-	if(d[1] !== null) {
-		strLength = getIntOrConstantValue(d[1][3] ? d[1][3][0] : undefined);
-	}
-	return {type: "string", upperBound: strLength};
+  let strLength = undefined;
+  if(d[1] !== null) {
+    strLength = getIntOrConstantValue(d[1][3] ? d[1][3][0] : undefined);
+  }
+  return {type: "string", upperBound: strLength};
 } %}
 
 booleanType -> "boolean" {% d => ({type: "bool"}) %}
 
-# order matters here
 numericType -> (
     "byte"
   | "octet"
@@ -317,58 +332,21 @@ numericType -> (
   | "long" __ "long"
   | "unsigned" __ "long"
   | "long" 
-) {% function(d, reject) { 
-
-	const maybeType = d[0].map((t) => t?.value).filter(t => !!t).join(" ");
-	switch(maybeType) {
-		case "unsigned short":
-			return {type: "uint16"};
-			
-		case "unsigned long":
-			return {type: "uint32"};
-			
-		case "unsigned long long":
-			return {type: "uint64"};
-			
-		case "short":
-			return {type: "int16"};
-			
-		case "long":
-			return {type: "int32"};
-			
-		case "long long":
-			return {type: "int64"};
-			
-		case "double":
-		case "float":
-			return {type: "float32"};
-			
-		case "long double":
-			return {type: "float64"};
-			
-		case "octet":
-			return {type: "byte"};
-		
-		case "wchar": 
-			return {type: "char"};
-
-		default:
-			return { type: maybeType } ;
-	}
+) {% (d) => { 
+  const typeString = d[0].map((t) => t?.value).filter(t => !!t).join(" ");
+  let type = numericTypeMap[typeString];
+  return { type: type ? type : typeString }; ;
 }
 %}
 
-# ALL CAPS return strings rather than objects (terminals)
+# ALL CAPS return strings rather than objects or null (terminals)
 
 BOOLEAN -> ("TRUE" | "FALSE") {% join %}
 
 # need to support mutliple adjacent strings as a single string
 STR -> (%STRING _):+  {% d => {
-	return join(d[0].flat(1).filter(d => d !== null));
+  return join(d[0].flat(1).filter(d => d !== null));
 }%}
-
-# Not actually used due to needing to parse either an int or float from a string
-NUMBER -> (SIGNED_FLOAT | SIGNED_INT | FLOAT | INT)  {% join %}
 
 SIGNED_FLOAT -> ("+"|"-") FLOAT {% join %}
 
@@ -379,13 +357,14 @@ FLOAT -> (%DECIMAL|%DECIMALEXP) {% join %}
 
 SIGNED_INT -> ("+"|"-") INT  {% join %}
 
+# convert token to string so that its easier to work with
 INT -> %INTEGER {% join %}
 
 semi -> ";" {% noop %}
 
 
 # Optional whitespace
-_ -> (null | %SPACE) {% noop %}
+_ -> %SPACE:? {% noop %}
 
 # Required whitespace
 __ -> %SPACE {% noop %}
