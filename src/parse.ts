@@ -119,11 +119,12 @@ function buildRos2IdlType(messageDefinition: string, grammar: Grammar): MessageD
     );
   }
   const result = results[0] as MessageDefinition[];
-  result.forEach(({ definitions }) => {
-    definitions.forEach((definition) => {
+  for (const { definitions } of result) {
+    for (const definition of definitions) {
       definition.type = normalizeType(definition.type);
-    });
-  });
+    }
+  }
+
   return result;
 }
 

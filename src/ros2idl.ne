@@ -173,8 +173,8 @@ module  -> (multiAnnotations "module" fieldName "{" (constantDcl):+ "}" semi) {%
 
 
 structWithAnnotation -> multiAnnotations struct {% 
- // ignore annotations on structs because we can only read default value (which doesn't apply)
- d => {return d[1];}
+ // default values don't apply to structs so we can just ignore all annotations on structs
+ d => d[1];
 %}
 
 struct -> "struct" fieldName "{" (declaration):+ "}" semi {% d => {
