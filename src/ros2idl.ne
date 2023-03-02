@@ -45,7 +45,7 @@ const lexer = moo.compile({
   SPACE: {match: /\s+/, lineBreaks: true},
   DECIMALEXP: /(?:(?:\d+\.\d*)|(?:\d*\.\d+)|(?:[0-9]+))[eE](?:[+|-])?[0-9]+/,
   DECIMAL: /(?:(?:\d+\.\d*)|(?:\d*\.\d+))/,
-  INTEGER: /[0-9]+/,
+  INTEGER: /\d+/,
   COMMENT: /(?:\/\/[^\n]*)|(?:\/\*(?:.|\n)+?\*\/)/,
   HEX_LITERAL: /0x(?:[0-9][a-f][A-F])+?/,
   STRING: [{match: /"(?:\\["\\rnu]|[^"\\])*?"/, lineBreaks: true, value: x => x.slice(1, -1)}], // remove outside quotes
