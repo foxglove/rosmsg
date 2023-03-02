@@ -174,7 +174,7 @@ module  -> (multiAnnotations "module" fieldName "{" (constantDcl):+ "}" semi) {%
 
 structWithAnnotation -> multiAnnotations struct {% 
  // default values don't apply to structs so we can just ignore all annotations on structs
- d => d[1];
+ d => d[1]
 %}
 
 struct -> "struct" fieldName "{" (declaration):+ "}" semi {% d => {
@@ -214,8 +214,7 @@ multiFieldNames -> fieldName ("," fieldName):* {%
  d => {
    const fieldNames = d.flat(2).filter( d => d !== null && d.name);
    return fieldNames;
- }
-%}
+ } %}
    
 multiAnnotations -> annotation:* {%
   d => {
@@ -232,9 +231,9 @@ annotation -> (
   ) {% d => id(id(d)) %}
 
 # ROS 2 spec only supports annotations mentioned here https://design.ros2.org/articles/idl_interface_definition.html 
-defaultAnnotation -> at "default" "(" "value" assignment ")" {% d => { 
-  return {defaultValue: d[4].value };
-} %}
+defaultAnnotation -> at "default" "(" "value" assignment ")" {% 
+  d =>  ({defaultValue: d[4].value })
+%}
 
 # These annotations will not cause errors, but are ignored in the message definition AST
 # We can't support generic annotations because it would make this grammar ambiguous (give it multiple ways to parse the same input)
