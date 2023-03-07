@@ -42,6 +42,43 @@ describe("rosidl grammar tests", () => {
       },
     ]);
   });
+  it("parses a module with a typedefs used in a struct", () => {
+    const types = parse(
+      `
+    module rosidl_parser {
+      module action {
+        typedef sequence<int32, 10> int32arr;
+        @default (value=5)
+        typedef short shortWithDefault;
+        struct MyAction_Goal {
+          int32arr intArray;
+          shortWithDefault short5;
+        };
+      };
+    };
+    `,
+    );
+    expect(types).toEqual([
+      {
+        definitions: [
+          {
+            isComplex: false,
+            name: "intArray",
+            type: "int32",
+            isArray: true,
+            arrayUpperBound: 10,
+          },
+          {
+            isComplex: false,
+            name: "short5",
+            type: "int16",
+            defaultValue: 5,
+          },
+        ],
+        name: "rosidl_parser::action::MyAction_Goal",
+      },
+    ]);
+  });
   it("parses a module with an multiple enclosed structs and modules", () => {
     const types = parse(
       `
@@ -490,7 +527,7 @@ module rosidl_parser {
     ]);
   });
 
-  it("parses a module with annotations including default values", () => {
+  it("parses a module with arbitrary annotations including default values", () => {
     const types = parse(
       `
 module rosidl_parser {
@@ -504,6 +541,7 @@ module rosidl_parser {
       @range ( min=-10, max=10 )
       long long_value;
       @verbatim (language="comment", text="")
+      @arbitrary_annotation ( key1="value1", key2=TRUE, key3=0.0, key4=10 )
       @key unsigned long unsigned_long_value;
     };
   };
