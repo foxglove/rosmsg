@@ -572,7 +572,7 @@ module rosidl_parser {
       },
     ]);
   });
-  it('parses a module with customTypes and properly replaces "::" ', () => {
+  it('parses a module with customTypes and properly replaces "::"', () => {
     const types = parse(
       `
 module rosidl_parser {
