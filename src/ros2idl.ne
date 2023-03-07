@@ -7,12 +7,17 @@ const keywords = [
   , "module"
   , "const"
   , "include"
+  , "typedef"
 
   //types
   , "boolean"
   , "wstring"
   , "string"
   , "sequence"
+
+  // Boolean types
+  , "TRUE"
+  , "FALSE"
   
   // numeric types
   , "byte"
@@ -64,6 +69,7 @@ const lexer = moo.compile({
   PT: ".",
   '/': "/",
   SIGN: /[+-]/,
+  HEADER: /={80}\nIDL: [a-zA-Z][\w]+(?:\/[a-zA-Z][\w]+)*/,
   EQ: /=[^\n]*?/,
   NAME: {match: /[a-zA-Z_][a-zA-Z0-9_]*(?:\:\:[a-zA-Z][a-zA-Z0-9_]*)*/, type: moo.keywords(kwObject)},
 });
@@ -106,6 +112,8 @@ function extend(objs) {
 function noop() {
   return null;
 }
+// name of typedef to definition (alias for types)
+const typedefMap = {};
 
 // Constants can be used in defs to define lengths of arrays and strings
 // they should be defined before the def that uses them
@@ -159,17 +167,19 @@ function processConstantModule(d) {
 
 @lexer lexer
 
-main -> importDcl:* module:+ {% d => {
-  return d[1][0];
+main -> (header:? importDcl:* module:+):+ {% d => {
+  return d[0].flatMap(inner => inner[2].flat());
 }
 %}
+
+header -> %HEADER {% noop %}
 
 # support <import> or "import" includes - just ignored
 importDcl -> "#" "include" (%STRING | "<" %NAME ("/" %NAME):* "." "idl" ">") {% noop %}
 
 # constant modules need to be separate from complex modules since they shouldn't mix
-module  -> (multiAnnotations "module" fieldName "{" (constantDcl):+ "}" semi) {% processConstantModule %}
-  | (multiAnnotations "module" fieldName "{" (structWithAnnotation|module):+ "}" semi) {% processComplexModule %}
+module  -> (multiAnnotations "module" fieldName "{" (typedefDcl|constantDcl):+ "}" semi) {% processConstantModule %}
+  | (multiAnnotations "module" fieldName "{" (typedefDcl|structWithAnnotation|module):+ "}" semi) {% processComplexModule %}
 
 
 structWithAnnotation -> multiAnnotations struct {% 
@@ -186,6 +196,20 @@ struct -> "struct" fieldName "{" (declaration):+ "}" semi {% d => {
   };
 } %}
 
+typedefDcl -> typedefWithAnnotations semi {% noop %}
+
+typedefWithAnnotations -> multiAnnotations (
+   typedef allTypes fieldName arrayLength
+ | typedef allTypes fieldName
+ | typedef sequenceType fieldName
+) {% d => {
+  const [{name}] = d[1].splice(2, 1);
+  const def = extend(d.flat(1));
+  typedefMap[name] = extend(d.flat(1));
+  return null;
+} %}
+
+typedef -> "typedef" {% noop %}
 constantDcl -> multiAnnotations constType semi {% d => d[1] %}
 declaration -> fieldWithAnnotation semi {% d => d[0] %}
 
@@ -222,28 +246,20 @@ multiAnnotations -> annotation:* {%
   }
 %}
 
-annotation -> (
-    defaultAnnotation
-  | rangeAnnotation
-  | commentAnnotation
-  | keyAnnotation
-  | transferModeAnnotation
-  ) {% d => id(id(d)) %}
+annotation -> at %NAME ("(" multiAnnotationParams ")"):? {% d => {
+  const paramsMap = d[2] ? d[2][1] : {};
+  if(d[1].value === "default") {
+    const defaultValue = paramsMap.value;
+    return {defaultValue};
+  }
+  return null
+} %}
 
-# ROS 2 spec only supports annotations mentioned here https://design.ros2.org/articles/idl_interface_definition.html 
-defaultAnnotation -> at "default" "(" "value" assignment ")" {% 
-  d =>  ({defaultValue: d[4].value })
+multiAnnotationParams -> annotationParam ("," annotationParam):* {%
+  d => extend([d[0], ...d[1].flatMap(([, param]) => param)])
 %}
-
-# These annotations will not cause errors, but are ignored in the message definition AST
-# We can't support generic annotations because it would make this grammar ambiguous (give it multiple ways to parse the same input)
-rangeAnnotation -> at "range" "(" "min" assignment "," "max" assignment ")" {% noop %}
-
-commentAnnotation -> at "verbatim" "(" "language" assignment "," "text" %EQ STR ")" {% noop %}
-
-keyAnnotation -> at "key" {% noop %}
-
-transferModeAnnotation -> at "transfer_mode" "(" %NAME ")" {% noop %}
+annotationParam -> (%NAME assignment) {% d => ({[d[0][0].value]: d[0][1].value}) %}
+  | (%NAME) {% noop %}
 
 at -> "@" {% noop %}
 
@@ -284,12 +300,14 @@ assignment -> (
   | intAssignment
   | stringAssignment
   | booleanAssignment
+  | variableAssignment
 ) {% d => d[0][0] %}
 
 floatAssignment ->   %EQ (SIGNED_FLOAT | FLOAT) {% ([, num]) => ({valueText: num[0], value: parseFloat(num[0])}) %}
 intAssignment -> %EQ (SIGNED_INT | INT) {% ([, num]) => ({valueText: num[0], value: parseInt(num[0])}) %}
 stringAssignment -> %EQ STR {% ([, str]) => ({valueText: str, value: str}) %}
 booleanAssignment -> %EQ BOOLEAN {% ([, bool]) => ({valueText: bool, value: bool === "TRUE"}) %}
+variableAssignment -> %EQ %NAME {% ([, name]) => ({valueText: name.value, value: constantToValueMap[name.value]}) %}
 
 allTypes -> (
     primitiveTypes
@@ -302,7 +320,13 @@ primitiveTypes -> (
   | booleanType
 ) {% d => ({...d[0][0], isComplex: false}) %}
 
-customType -> %NAME {% d => ({type: d[0].value, isComplex: true }) %}
+customType -> %NAME {% d => {
+	let possibleTypedef = typedefMap[d[0].value];
+	if(possibleTypedef) {
+		return possibleTypedef;
+	}
+	return {type: d[0].value, isComplex: true }
+}%}
 
 stringType ->  ("string"|"wstring") ("<" (INT | %NAME) ">"):? {% d => {
   let strLength = undefined;
@@ -345,7 +369,7 @@ numericType -> (
 
 # ALL CAPS return strings rather than objects or null (terminals)
 
-BOOLEAN -> ("TRUE" | "FALSE") {% join %}
+BOOLEAN -> ("TRUE" | "FALSE" ) {% join %}
 
 # need to support mutliple adjacent strings as a single string
 STR -> %STRING:+  {% d => {
