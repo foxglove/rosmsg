@@ -106,10 +106,10 @@ export function fixupTypes(types: MessageDefinition[]): void {
  * @returns - parsed message definition
  */
 export function parseRos2idl(messageDefinition: string): MessageDefinition[] {
-  return buildRos2IdlType(messageDefinition, ROS2IDL_GRAMMAR);
+  return buildRos2idlType(messageDefinition, ROS2IDL_GRAMMAR);
 }
 
-function buildRos2IdlType(messageDefinition: string, grammar: Grammar): MessageDefinition[] {
+function buildRos2idlType(messageDefinition: string, grammar: Grammar): MessageDefinition[] {
   const parser = new Parser(grammar);
   parser.feed(messageDefinition);
   const results = parser.finish();
