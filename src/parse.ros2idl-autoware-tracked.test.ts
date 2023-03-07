@@ -1,4 +1,4 @@
-import { parse } from "./parse";
+import { parseRos2idl as parse } from "./parse";
 
 const trackedObjectSchema = `================================================================================
 IDL: autoware_auto_perception_msgs/msg/TrackedObjects
@@ -428,7 +428,7 @@ module builtin_interfaces {
 
 describe("ros2idl large autoware message (TrackedMessages)", () => {
   it("should parse the message without failing", () => {
-    const parsed = parse(trackedObjectSchema, { ros2idl: true });
+    const parsed = parse(trackedObjectSchema);
     expect(parsed).toMatchSnapshot("autoware-TrackedObjects");
   });
 });

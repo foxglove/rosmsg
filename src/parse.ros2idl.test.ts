@@ -1,4 +1,4 @@
-import { parse } from "./parse";
+import { parseRos2idl as parse } from "./parse";
 
 describe("rosidl grammar tests", () => {
   it("parses a module with an enclosed struct and module", () => {
@@ -15,7 +15,6 @@ describe("rosidl grammar tests", () => {
       };
     };
     `,
-      { ros2idl: true },
     );
     expect(types).toEqual([
       {
@@ -69,7 +68,6 @@ describe("rosidl grammar tests", () => {
         };
       };
     `,
-      { ros2idl: true },
     );
     expect(types).toEqual([
       {
@@ -160,7 +158,6 @@ describe("rosidl grammar tests", () => {
       };
     };
     `,
-      { ros2idl: true },
     );
 
     // same as above
@@ -204,7 +201,6 @@ module rosidl_parser {
   };
 };
     `,
-      { ros2idl: true },
     );
     expect(types).toEqual([
       {
@@ -277,7 +273,6 @@ module rosidl_parser {
         };
       };
     `,
-      { ros2idl: true },
     );
     expect(types).toEqual([
       {
@@ -414,7 +409,6 @@ module rosidl_parser {
         };
       };
     `,
-      { ros2idl: true },
     );
     expect(types).toEqual([
       {
@@ -515,7 +509,6 @@ module rosidl_parser {
   };
 };
     `,
-      { ros2idl: true },
     );
     expect(types).toEqual([
       {
@@ -554,7 +547,6 @@ module rosidl_parser {
   };
 };
     `,
-      { ros2idl: true },
     );
     expect(types).toEqual([
       {
@@ -618,7 +610,6 @@ module rosidl_parser {
         };
       };
     `,
-      { ros2idl: true },
     );
     expect(types).toEqual([
       {
@@ -720,7 +711,6 @@ module rosidl_parser {
   };
 };
     `,
-      { ros2idl: true },
     );
     expect(types).toEqual([
       {
@@ -784,7 +774,7 @@ module rosidl_parser {
         };
       };
     `;
-    const types = parse(msgDef, { ros2idl: true });
+    const types = parse(msgDef);
     expect(types).toEqual([
       {
         definitions: [
@@ -821,7 +811,7 @@ module rosidl_parser {
       };
     };
     `;
-    const types = parse(msgDef, { ros2idl: true });
+    const types = parse(msgDef);
     expect(types).toEqual([
       {
         definitions: [
@@ -851,7 +841,7 @@ module rosidl_parser {
         };
       };
     `;
-    expect(() => parse(msgDef, { ros2idl: true })).toThrow(/unexpected , token: ","/i);
+    expect(() => parse(msgDef)).toThrow(/unexpected , token: ","/i);
   });
   /****************  Syntax Errors */
   it("missing bracket at the end will result in end of input error", () => {
@@ -866,7 +856,7 @@ module rosidl_parser {
         };
       };
     `;
-    expect(() => parse(msgDef, { ros2idl: true })).toThrow(
+    expect(() => parse(msgDef)).toThrow(
       `Could not parse message definition (unexpected end of input): '${msgDef}'`,
     );
   });
@@ -881,6 +871,6 @@ module rosidl_parser {
         };
       };
     };`;
-    expect(() => parse(msgDef, { ros2idl: true })).toThrow(/unexpected RCBR token: "}"/i);
+    expect(() => parse(msgDef)).toThrow(/unexpected RCBR token: "}"/i);
   });
 });

@@ -1,4 +1,4 @@
-import { parse } from "./parse";
+import { parseRos2idl as parse } from "./parse";
 
 const rawAutowareSchemas = [
   '================================================================================\nIDL: autoware_auto_vehicle_msgs/msg/VelocityReport\n#include "std_msgs/msg/Header.idl"\n\nmodule autoware_auto_vehicle_msgs {\n  module msg {\n    @verbatim (language="comment", text=\n      " VelocityReport.msg")\n    struct VelocityReport {\n      std_msgs::msg::Header header;\n\n      @default (value=0.0)\n      float longitudinal_velocity;\n\n      @default (value=0.0)\n      float lateral_velocity;\n\n      @default (value=0.0)\n      float heading_rate;\n    };\n  };\n};\n\n================================================================================\nIDL: std_msgs/msg/Header\n// generated from rosidl_adapter/resource/msg.idl.em\n// with input from std_msgs/msg/Header.msg\n// generated code does not contain a copyright notice\n\n#include "builtin_interfaces/msg/Time.idl"\n\nmodule std_msgs {\n  module msg {\n    @verbatim (language="comment", text=\n      "Standard metadata for higher-level stamped data types." "\\n"\n      "This is generally used to communicate timestamped data" "\\n"\n      "in a particular coordinate frame.")\n    struct Header {\n      @verbatim (language="comment", text=\n        "Two-integer timestamp that is expressed as seconds and nanoseconds.")\n      builtin_interfaces::msg::Time stamp;\n\n      @verbatim (language="comment", text=\n        "Transform frame with which this data is associated.")\n      string frame_id;\n    };\n  };\n};\n\n================================================================================\nIDL: builtin_interfaces/msg/Time\n// generated from rosidl_adapter/resource/msg.idl.em\n// with input from builtin_interfaces/msg/Time.msg\n// generated code does not contain a copyright notice\n\n\nmodule builtin_interfaces {\n  module msg {\n    @verbatim (language="comment", text=\n      "This message communicates ROS Time defined here:" "\\n"\n      "https://design.ros2.org/articles/clock_and_time.html")\n    struct Time {\n      @verbatim (language="comment", text=\n        "The seconds component, valid over all int32 values.")\n      int32 sec;\n\n      @verbatim (language="comment", text=\n        "The nanoseconds component, valid in the range [0, 10e9).")\n      uint32 nanosec;\n    };\n  };\n};\n',
@@ -29,6 +29,6 @@ describe("test autoware generated idl schemas", () => {
     schema,
   ]) as [string, string][];
   it.each(testMap)("parses %s", (_idl, schema) => {
-    expect(() => parse(schema, { ros2idl: true })).not.toThrow();
+    expect(() => parse(schema)).not.toThrow();
   });
 });
