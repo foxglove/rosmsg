@@ -28,7 +28,7 @@ describe("rosidl grammar tests", () => {
             type: "int16",
           },
         ],
-        name: "rosidl_parser::action::MyAction_Goal_Constants",
+        name: "rosidl_parser/action/MyAction_Goal_Constants",
       },
       {
         definitions: [
@@ -38,7 +38,7 @@ describe("rosidl grammar tests", () => {
             type: "int32",
           },
         ],
-        name: "rosidl_parser::action::MyAction_Goal",
+        name: "rosidl_parser/action/MyAction_Goal",
       },
     ]);
   });
@@ -75,7 +75,7 @@ describe("rosidl grammar tests", () => {
             defaultValue: 5,
           },
         ],
-        name: "rosidl_parser::action::MyAction_Goal",
+        name: "rosidl_parser/action/MyAction_Goal",
       },
     ]);
   });
@@ -108,7 +108,7 @@ describe("rosidl grammar tests", () => {
     );
     expect(types).toEqual([
       {
-        name: "rosidl_parser::action::MyAction_Goal_Constants",
+        name: "rosidl_parser/action/MyAction_Goal_Constants",
         definitions: [
           {
             isConstant: true,
@@ -121,7 +121,7 @@ describe("rosidl grammar tests", () => {
         ],
       },
       {
-        name: "rosidl_parser::action::MyAction_Goal",
+        name: "rosidl_parser/action/MyAction_Goal",
         definitions: [
           {
             type: "int32",
@@ -131,7 +131,7 @@ describe("rosidl grammar tests", () => {
         ],
       },
       {
-        name: "rosidl_parser::action::MyAction_Result_Constants",
+        name: "rosidl_parser/action/MyAction_Result_Constants",
         definitions: [
           {
             isConstant: true,
@@ -144,7 +144,7 @@ describe("rosidl grammar tests", () => {
         ],
       },
       {
-        name: "rosidl_parser::action::MyAction_Result",
+        name: "rosidl_parser/action/MyAction_Result",
         definitions: [
           {
             type: "uint32",
@@ -154,7 +154,7 @@ describe("rosidl grammar tests", () => {
         ],
       },
       {
-        name: "rosidl_parser::action::MyAction_Feedback_Constants",
+        name: "rosidl_parser/action/MyAction_Feedback_Constants",
         definitions: [
           {
             isConstant: true,
@@ -167,7 +167,7 @@ describe("rosidl grammar tests", () => {
         ],
       },
       {
-        name: "rosidl_parser::action::MyAction_Feedback",
+        name: "rosidl_parser/action/MyAction_Feedback",
         definitions: [
           {
             type: "float32",
@@ -210,7 +210,7 @@ describe("rosidl grammar tests", () => {
             type: "int16",
           },
         ],
-        name: "rosidl_parser::action::MyAction_Goal_Constants",
+        name: "rosidl_parser/action/MyAction_Goal_Constants",
       },
       {
         definitions: [
@@ -220,7 +220,7 @@ describe("rosidl grammar tests", () => {
             type: "int32",
           },
         ],
-        name: "rosidl_parser::action::MyAction_Goal",
+        name: "rosidl_parser/action/MyAction_Goal",
       },
     ]);
   });
@@ -275,7 +275,7 @@ module rosidl_parser {
             type: "string",
           },
         ],
-        name: "rosidl_parser::msg::MyMessage_Constants",
+        name: "rosidl_parser/msg/MyMessage_Constants",
       },
     ]);
   });
@@ -313,7 +313,7 @@ module rosidl_parser {
     );
     expect(types).toEqual([
       {
-        name: "rosidl_parser::msg::MyMessage",
+        name: "rosidl_parser/msg/MyMessage",
         definitions: [
           {
             type: "uint16",
@@ -449,7 +449,7 @@ module rosidl_parser {
     );
     expect(types).toEqual([
       {
-        name: "rosidl_parser::msg::MyMessage_Constants",
+        name: "rosidl_parser/msg/MyMessage_Constants",
         definitions: [
           {
             name: "UNSIGNED_LONG_CONSTANT",
@@ -462,7 +462,7 @@ module rosidl_parser {
         ],
       },
       {
-        name: "rosidl_parser::msg::MyMessage",
+        name: "rosidl_parser/msg/MyMessage",
         definitions: [
           {
             type: "string",
@@ -550,7 +550,7 @@ module rosidl_parser {
     );
     expect(types).toEqual([
       {
-        name: "rosidl_parser::msg::MyMessage",
+        name: "rosidl_parser/msg/MyMessage",
         definitions: [
           {
             defaultValue: 123,
@@ -572,15 +572,15 @@ module rosidl_parser {
       },
     ]);
   });
-  it("parses a module with customTypes", () => {
+  it('parses a module with customTypes and properly replaces "::" ', () => {
     const types = parse(
       `
 module rosidl_parser {
   module msg {
     struct MyMessage {
-      Point single_point;
-      Point points_with_length[10];
-      sequence<Point> points_with_length_sequence;
+      geometry::Point single_point;
+      geometry::Point points_with_length[10];
+      sequence<geometry::Point> points_with_length_sequence;
     };
   };
 };
@@ -588,22 +588,22 @@ module rosidl_parser {
     );
     expect(types).toEqual([
       {
-        name: "rosidl_parser::msg::MyMessage",
+        name: "rosidl_parser/msg/MyMessage",
         definitions: [
           {
-            type: "Point",
+            type: "geometry/Point",
             name: "single_point",
             isComplex: true,
           },
           {
-            type: "Point",
+            type: "geometry/Point",
             name: "points_with_length",
             isArray: true,
             arrayLength: 10,
             isComplex: true,
           },
           {
-            type: "Point",
+            type: "geometry/Point",
             name: "points_with_length_sequence",
             isArray: true,
             isComplex: true,
@@ -651,7 +651,7 @@ module rosidl_parser {
     );
     expect(types).toEqual([
       {
-        name: "rosidl_parser::msg::MyMessage",
+        name: "rosidl_parser/msg/MyMessage",
         definitions: [
           {
             defaultValue: 19000000000,
@@ -786,7 +786,7 @@ module rosidl_parser {
             type: "float64",
           },
         ],
-        name: "rosidl_parser::msg::MyMessage_Constants",
+        name: "rosidl_parser/msg/MyMessage_Constants",
       },
     ]);
   });
@@ -826,7 +826,7 @@ module rosidl_parser {
             type: "string",
           },
         ],
-        name: "action::MyAction_Goal_Constants",
+        name: "action/MyAction_Goal_Constants",
       },
       {
         definitions: [
@@ -836,7 +836,7 @@ module rosidl_parser {
             type: "int32",
           },
         ],
-        name: "action::MyAction_Goal",
+        name: "action/MyAction_Goal",
       },
     ]);
   });
@@ -866,7 +866,7 @@ module rosidl_parser {
             type: "int32",
           },
         ],
-        name: "action::MyAction_Goal",
+        name: "action/MyAction_Goal",
       },
     ]);
   });

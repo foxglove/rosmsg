@@ -144,7 +144,7 @@ function processComplexModule(d) {
   // Need to update the names of modules and structs to be in their respective namespaces
   traverse(d[0], (sub) => {
     if(sub && sub.definitions) {
-      sub.name = `${moduleName}::${sub.name}`;
+      sub.name = `${moduleName}/${sub.name}`;
       msgDefs.push(sub);
     }
   });
@@ -325,7 +325,7 @@ customType -> %NAME {% d => {
   if(possibleTypedef) {
     return possibleTypedef;
   }
-  return {type: d[0].value, isComplex: true }
+  return {type: d[0].value.replace("::", "/"), isComplex: true }
 }%}
 
 stringType ->  ("string"|"wstring") ("<" (INT | %NAME) ">"):? {% d => {

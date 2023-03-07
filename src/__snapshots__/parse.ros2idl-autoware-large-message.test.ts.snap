@@ -7,24 +7,24 @@ Array [
       Object {
         "isComplex": true,
         "name": "header",
-        "type": "std_msgs::msg::Header",
+        "type": "std_msgs/msg::Header",
       },
       Object {
         "arrayUpperBound": undefined,
         "isArray": true,
         "isComplex": true,
         "name": "objects",
-        "type": "autoware_auto_perception_msgs::msg::TrackedObject",
+        "type": "autoware_auto_perception_msgs/msg::TrackedObject",
       },
     ],
-    "name": "autoware_auto_perception_msgs::msg::TrackedObjects",
+    "name": "autoware_auto_perception_msgs/msg/TrackedObjects",
   },
   Object {
     "definitions": Array [
       Object {
         "isComplex": true,
         "name": "object_id",
-        "type": "unique_identifier_msgs::msg::UUID",
+        "type": "unique_identifier_msgs/msg::UUID",
       },
       Object {
         "isComplex": false,
@@ -36,20 +36,20 @@ Array [
         "isArray": true,
         "isComplex": true,
         "name": "classification",
-        "type": "autoware_auto_perception_msgs::msg::ObjectClassification",
+        "type": "autoware_auto_perception_msgs/msg::ObjectClassification",
       },
       Object {
         "isComplex": true,
         "name": "kinematics",
-        "type": "autoware_auto_perception_msgs::msg::TrackedObjectKinematics",
+        "type": "autoware_auto_perception_msgs/msg::TrackedObjectKinematics",
       },
       Object {
         "isComplex": true,
         "name": "shape",
-        "type": "autoware_auto_perception_msgs::msg::Shape",
+        "type": "autoware_auto_perception_msgs/msg::Shape",
       },
     ],
-    "name": "autoware_auto_perception_msgs::msg::TrackedObject",
+    "name": "autoware_auto_perception_msgs/msg/TrackedObject",
   },
   Object {
     "definitions": Array [
@@ -118,7 +118,7 @@ Array [
         "valueText": "7",
       },
     ],
-    "name": "autoware_auto_perception_msgs::msg::ObjectClassification_Constants",
+    "name": "autoware_auto_perception_msgs/msg/ObjectClassification_Constants",
   },
   Object {
     "definitions": Array [
@@ -133,7 +133,7 @@ Array [
         "type": "float32",
       },
     ],
-    "name": "autoware_auto_perception_msgs::msg::ObjectClassification",
+    "name": "autoware_auto_perception_msgs/msg/ObjectClassification",
   },
   Object {
     "definitions": Array [
@@ -162,7 +162,7 @@ Array [
         "valueText": "2",
       },
     ],
-    "name": "autoware_auto_perception_msgs::msg::Shape_Constants",
+    "name": "autoware_auto_perception_msgs/msg/Shape_Constants",
   },
   Object {
     "definitions": Array [
@@ -174,15 +174,15 @@ Array [
       Object {
         "isComplex": true,
         "name": "footprint",
-        "type": "geometry_msgs::msg::Polygon",
+        "type": "geometry_msgs/msg::Polygon",
       },
       Object {
         "isComplex": true,
         "name": "dimensions",
-        "type": "geometry_msgs::msg::Vector3",
+        "type": "geometry_msgs/msg::Vector3",
       },
     ],
-    "name": "autoware_auto_perception_msgs::msg::Shape",
+    "name": "autoware_auto_perception_msgs/msg/Shape",
   },
   Object {
     "definitions": Array [
@@ -191,10 +191,10 @@ Array [
         "isArray": true,
         "isComplex": true,
         "name": "points",
-        "type": "geometry_msgs::msg::Point32",
+        "type": "geometry_msgs/msg::Point32",
       },
     ],
-    "name": "geometry_msgs::msg::Polygon",
+    "name": "geometry_msgs/msg/Polygon",
   },
   Object {
     "definitions": Array [
@@ -214,7 +214,7 @@ Array [
         "type": "float32",
       },
     ],
-    "name": "geometry_msgs::msg::Point32",
+    "name": "geometry_msgs/msg/Point32",
   },
   Object {
     "definitions": Array [
@@ -243,14 +243,14 @@ Array [
         "valueText": "2",
       },
     ],
-    "name": "autoware_auto_perception_msgs::msg::TrackedObjectKinematics_Constants",
+    "name": "autoware_auto_perception_msgs/msg/TrackedObjectKinematics_Constants",
   },
   Object {
     "definitions": Array [
       Object {
         "isComplex": true,
         "name": "pose_with_covariance",
-        "type": "geometry_msgs::msg::PoseWithCovariance",
+        "type": "geometry_msgs/msg::PoseWithCovariance",
       },
       Object {
         "isComplex": false,
@@ -260,12 +260,12 @@ Array [
       Object {
         "isComplex": true,
         "name": "twist_with_covariance",
-        "type": "geometry_msgs::msg::TwistWithCovariance",
+        "type": "geometry_msgs/msg::TwistWithCovariance",
       },
       Object {
         "isComplex": true,
         "name": "acceleration_with_covariance",
-        "type": "geometry_msgs::msg::AccelWithCovariance",
+        "type": "geometry_msgs/msg::AccelWithCovariance",
       },
       Object {
         "isComplex": false,
@@ -273,14 +273,14 @@ Array [
         "type": "bool",
       },
     ],
-    "name": "autoware_auto_perception_msgs::msg::TrackedObjectKinematics",
+    "name": "autoware_auto_perception_msgs/msg/TrackedObjectKinematics",
   },
   Object {
     "definitions": Array [
       Object {
         "isComplex": true,
         "name": "accel",
-        "type": "geometry_msgs::msg::Accel",
+        "type": "geometry_msgs/msg::Accel",
       },
       Object {
         "arrayLength": 36,
@@ -290,22 +290,22 @@ Array [
         "type": "float32",
       },
     ],
-    "name": "geometry_msgs::msg::AccelWithCovariance",
+    "name": "geometry_msgs/msg/AccelWithCovariance",
   },
   Object {
     "definitions": Array [
       Object {
         "isComplex": true,
         "name": "linear",
-        "type": "geometry_msgs::msg::Vector3",
+        "type": "geometry_msgs/msg::Vector3",
       },
       Object {
         "isComplex": true,
         "name": "angular",
-        "type": "geometry_msgs::msg::Vector3",
+        "type": "geometry_msgs/msg::Vector3",
       },
     ],
-    "name": "geometry_msgs::msg::Accel",
+    "name": "geometry_msgs/msg/Accel",
   },
   Object {
     "definitions": Array [
@@ -325,7 +325,7 @@ Array [
         "type": "float32",
       },
     ],
-    "name": "geometry_msgs::msg::Vector3",
+    "name": "geometry_msgs/msg/Vector3",
   },
   Object {
     "definitions": Array [
@@ -345,7 +345,7 @@ Array [
         "type": "float32",
       },
     ],
-    "name": "geometry_msgs::msg::Point",
+    "name": "geometry_msgs/msg/Point",
   },
   Object {
     "definitions": Array [
@@ -374,14 +374,14 @@ Array [
         "type": "float32",
       },
     ],
-    "name": "geometry_msgs::msg::Quaternion",
+    "name": "geometry_msgs/msg/Quaternion",
   },
   Object {
     "definitions": Array [
       Object {
         "isComplex": true,
         "name": "twist",
-        "type": "geometry_msgs::msg::Twist",
+        "type": "geometry_msgs/msg::Twist",
       },
       Object {
         "arrayLength": 36,
@@ -391,22 +391,22 @@ Array [
         "type": "float32",
       },
     ],
-    "name": "geometry_msgs::msg::TwistWithCovariance",
+    "name": "geometry_msgs/msg/TwistWithCovariance",
   },
   Object {
     "definitions": Array [
       Object {
         "isComplex": true,
         "name": "linear",
-        "type": "geometry_msgs::msg::Vector3",
+        "type": "geometry_msgs/msg::Vector3",
       },
       Object {
         "isComplex": true,
         "name": "angular",
-        "type": "geometry_msgs::msg::Vector3",
+        "type": "geometry_msgs/msg::Vector3",
       },
     ],
-    "name": "geometry_msgs::msg::Twist",
+    "name": "geometry_msgs/msg/Twist",
   },
   Object {
     "definitions": Array [
@@ -418,14 +418,14 @@ Array [
         "type": "uint8",
       },
     ],
-    "name": "unique_identifier_msgs::msg::UUID",
+    "name": "unique_identifier_msgs/msg/UUID",
   },
   Object {
     "definitions": Array [
       Object {
         "isComplex": true,
         "name": "stamp",
-        "type": "builtin_interfaces::msg::Time",
+        "type": "builtin_interfaces/msg::Time",
       },
       Object {
         "isComplex": false,
@@ -434,7 +434,7 @@ Array [
         "upperBound": undefined,
       },
     ],
-    "name": "std_msgs::msg::Header",
+    "name": "std_msgs/msg/Header",
   },
   Object {
     "definitions": Array [
@@ -449,7 +449,7 @@ Array [
         "type": "uint32",
       },
     ],
-    "name": "builtin_interfaces::msg::Time",
+    "name": "builtin_interfaces/msg/Time",
   },
 ]
 `;
