@@ -325,7 +325,7 @@ customType -> %NAME {% d => {
   if(possibleTypedef) {
     return possibleTypedef;
   }
-  return {type: d[0].value.replace("::", "/"), isComplex: true }
+  return {type: d[0].value.replaceAll("::", "/"), isComplex: true }
 }%}
 
 stringType ->  ("string"|"wstring") ("<" (INT | %NAME) ">"):? {% d => {

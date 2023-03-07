@@ -578,9 +578,9 @@ module rosidl_parser {
 module rosidl_parser {
   module msg {
     struct MyMessage {
-      geometry::Point single_point;
-      geometry::Point points_with_length[10];
-      sequence<geometry::Point> points_with_length_sequence;
+      geometry::msg::Point single_point;
+      geometry::msg::Point points_with_length[10];
+      sequence<geometry::msg::Point> points_with_length_sequence;
     };
   };
 };
@@ -591,19 +591,19 @@ module rosidl_parser {
         name: "rosidl_parser/msg/MyMessage",
         definitions: [
           {
-            type: "geometry/Point",
+            type: "geometry/msg/Point",
             name: "single_point",
             isComplex: true,
           },
           {
-            type: "geometry/Point",
+            type: "geometry/msg/Point",
             name: "points_with_length",
             isArray: true,
             arrayLength: 10,
             isComplex: true,
           },
           {
-            type: "geometry/Point",
+            type: "geometry/msg/Point",
             name: "points_with_length_sequence",
             isArray: true,
             isComplex: true,

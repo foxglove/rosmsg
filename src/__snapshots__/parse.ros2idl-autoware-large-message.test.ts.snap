@@ -7,14 +7,14 @@ Array [
       Object {
         "isComplex": true,
         "name": "header",
-        "type": "std_msgs/msg::Header",
+        "type": "std_msgs/msg/Header",
       },
       Object {
         "arrayUpperBound": undefined,
         "isArray": true,
         "isComplex": true,
         "name": "objects",
-        "type": "autoware_auto_perception_msgs/msg::TrackedObject",
+        "type": "autoware_auto_perception_msgs/msg/TrackedObject",
       },
     ],
     "name": "autoware_auto_perception_msgs/msg/TrackedObjects",
@@ -24,7 +24,7 @@ Array [
       Object {
         "isComplex": true,
         "name": "object_id",
-        "type": "unique_identifier_msgs/msg::UUID",
+        "type": "unique_identifier_msgs/msg/UUID",
       },
       Object {
         "isComplex": false,
@@ -36,17 +36,17 @@ Array [
         "isArray": true,
         "isComplex": true,
         "name": "classification",
-        "type": "autoware_auto_perception_msgs/msg::ObjectClassification",
+        "type": "autoware_auto_perception_msgs/msg/ObjectClassification",
       },
       Object {
         "isComplex": true,
         "name": "kinematics",
-        "type": "autoware_auto_perception_msgs/msg::TrackedObjectKinematics",
+        "type": "autoware_auto_perception_msgs/msg/TrackedObjectKinematics",
       },
       Object {
         "isComplex": true,
         "name": "shape",
-        "type": "autoware_auto_perception_msgs/msg::Shape",
+        "type": "autoware_auto_perception_msgs/msg/Shape",
       },
     ],
     "name": "autoware_auto_perception_msgs/msg/TrackedObject",
@@ -174,12 +174,12 @@ Array [
       Object {
         "isComplex": true,
         "name": "footprint",
-        "type": "geometry_msgs/msg::Polygon",
+        "type": "geometry_msgs/msg/Polygon",
       },
       Object {
         "isComplex": true,
         "name": "dimensions",
-        "type": "geometry_msgs/msg::Vector3",
+        "type": "geometry_msgs/msg/Vector3",
       },
     ],
     "name": "autoware_auto_perception_msgs/msg/Shape",
@@ -191,7 +191,7 @@ Array [
         "isArray": true,
         "isComplex": true,
         "name": "points",
-        "type": "geometry_msgs/msg::Point32",
+        "type": "geometry_msgs/msg/Point32",
       },
     ],
     "name": "geometry_msgs/msg/Polygon",
@@ -250,7 +250,7 @@ Array [
       Object {
         "isComplex": true,
         "name": "pose_with_covariance",
-        "type": "geometry_msgs/msg::PoseWithCovariance",
+        "type": "geometry_msgs/msg/PoseWithCovariance",
       },
       Object {
         "isComplex": false,
@@ -260,12 +260,12 @@ Array [
       Object {
         "isComplex": true,
         "name": "twist_with_covariance",
-        "type": "geometry_msgs/msg::TwistWithCovariance",
+        "type": "geometry_msgs/msg/TwistWithCovariance",
       },
       Object {
         "isComplex": true,
         "name": "acceleration_with_covariance",
-        "type": "geometry_msgs/msg::AccelWithCovariance",
+        "type": "geometry_msgs/msg/AccelWithCovariance",
       },
       Object {
         "isComplex": false,
@@ -280,7 +280,7 @@ Array [
       Object {
         "isComplex": true,
         "name": "accel",
-        "type": "geometry_msgs/msg::Accel",
+        "type": "geometry_msgs/msg/Accel",
       },
       Object {
         "arrayLength": 36,
@@ -297,12 +297,12 @@ Array [
       Object {
         "isComplex": true,
         "name": "linear",
-        "type": "geometry_msgs/msg::Vector3",
+        "type": "geometry_msgs/msg/Vector3",
       },
       Object {
         "isComplex": true,
         "name": "angular",
-        "type": "geometry_msgs/msg::Vector3",
+        "type": "geometry_msgs/msg/Vector3",
       },
     ],
     "name": "geometry_msgs/msg/Accel",
@@ -381,7 +381,7 @@ Array [
       Object {
         "isComplex": true,
         "name": "twist",
-        "type": "geometry_msgs/msg::Twist",
+        "type": "geometry_msgs/msg/Twist",
       },
       Object {
         "arrayLength": 36,
@@ -398,12 +398,12 @@ Array [
       Object {
         "isComplex": true,
         "name": "linear",
-        "type": "geometry_msgs/msg::Vector3",
+        "type": "geometry_msgs/msg/Vector3",
       },
       Object {
         "isComplex": true,
         "name": "angular",
-        "type": "geometry_msgs/msg::Vector3",
+        "type": "geometry_msgs/msg/Vector3",
       },
     ],
     "name": "geometry_msgs/msg/Twist",
@@ -425,7 +425,7 @@ Array [
       Object {
         "isComplex": true,
         "name": "stamp",
-        "type": "builtin_interfaces/msg::Time",
+        "type": "builtin_interfaces/msg/Time",
       },
       Object {
         "isComplex": false,
