@@ -321,11 +321,11 @@ primitiveTypes -> (
 ) {% d => ({...d[0][0], isComplex: false}) %}
 
 customType -> %NAME {% d => {
-	let possibleTypedef = typedefMap[d[0].value];
-	if(possibleTypedef) {
-		return possibleTypedef;
-	}
-	return {type: d[0].value, isComplex: true }
+  let possibleTypedef = typedefMap[d[0].value];
+  if(possibleTypedef) {
+    return possibleTypedef;
+  }
+  return {type: d[0].value, isComplex: true }
 }%}
 
 stringType ->  ("string"|"wstring") ("<" (INT | %NAME) ">"):? {% d => {
