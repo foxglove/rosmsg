@@ -125,6 +125,7 @@ type RawIdlDefinition = {
 };
 
 type RawIdlFieldDefinition = Partial<MessageDefinitionField> & {
+  definitions: undefined;
   definitionType?: "typedef";
   value?: ConstantValue | ConstantVariableValue;
 };
@@ -155,8 +156,7 @@ function traverseIdl(
   processNode: (path: (RawIdlDefinition | RawIdlFieldDefinition)[]) => void,
 ) {
   const currNode = path[path.length - 1]!;
-  const children: (RawIdlDefinition | RawIdlFieldDefinition)[] = (currNode as RawIdlDefinition)
-    .definitions;
+  const children: (RawIdlDefinition | RawIdlFieldDefinition)[] | undefined = currNode.definitions;
   if (children) {
     children.forEach((n) => traverseIdl([...path, n], processNode));
   }
@@ -184,27 +184,33 @@ function postProcessIdlDefinitions(definitions: RawIdlDefinition[]): MessageDefi
     // modify ast nodes in-place to replace typedefs and constants
     // also fix up names to use ros package resource names
     traverseIdl([definition], (path) => {
-      const node = path[path.length - 1] as RawIdlFieldDefinition;
+      const node = path[path.length - 1]!;
+      if (node.definitions != undefined) {
+        return;
+      }
 
       const nodeKeys = Object.keys(node) as (keyof RawIdlFieldDefinition)[];
       // need to iterate through keys because this can occur on arrayLength, upperBound, arrayUpperBound, value, defaultValue
       for (const key of nodeKeys) {
-        if ((node[key] as ConstantVariableValue)?.usesConstant === true) {
+        // can't narrow type by doing typeof node[key] === "object" even though it's the only object type
+        if (typeof node[key] === "object" && (node[key] as ConstantVariableValue).usesConstant) {
           const constantName = (node[key] as ConstantVariableValue).name;
           if (constantValueMap.has(constantName)) {
             (node[key] as ConstantValue) = constantValueMap.get(constantName);
           } else {
             throw new Error(
-              `Could not find constant ${constantName} for field ${node.name} in ${definition.name}`,
+              `Could not find constant <${constantName}> for field <${
+                node.name ?? "undefined"
+              }> in <${definition.name}>`,
             );
           }
         }
       }
       // replace field definition with corresponding typedef aliased definition
-      if (node.type && typedefMap.has(node.type!)) {
-        Object.assign(node, { ...typedefMap.get(node.type!), name: node.name });
+      if (node.type && typedefMap.has(node.type)) {
+        Object.assign(node, { ...typedefMap.get(node.type), name: node.name });
       }
-      if (node.type !== undefined) {
+      if (node.type != undefined) {
         node.type = node.type.replace(/::/g, "/");
       }
     });
@@ -222,7 +228,7 @@ function flattenIdlNamespaces(definition: RawIdlDefinition): MessageDefinition[]
   traverseIdl([definition], (path) => {
     const node = path[path.length - 1] as RawIdlDefinition;
     if (node.definitionType === "module") {
-      let moduleDefs = node.definitions.filter((d) => d.definitionType !== "typedef");
+      const moduleDefs = node.definitions.filter((d) => d.definitionType !== "typedef");
       // only add modules if all fields are constants (complex leaf)
       if (moduleDefs.every((child) => (child as RawIdlFieldDefinition).isConstant)) {
         flattened.push({
