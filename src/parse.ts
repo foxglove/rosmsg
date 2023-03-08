@@ -12,11 +12,13 @@ import { Grammar, Parser } from "nearley";
 
 import { buildRos2Type } from "./buildRos2Type";
 import ros1Rules from "./ros1.ne";
+import ros2idlRules from "./ros2idl.ne";
 
 const ROS1_GRAMMAR = Grammar.fromCompiled(ros1Rules);
+export const ROS2IDL_GRAMMAR = Grammar.fromCompiled(ros2idlRules);
 
 export type ParseOptions = {
-  /** Parse message definitions as ROS2. Otherwise, parse as ROS1 */
+  /** Parse message definitions as ROS 2. Otherwise, parse as ROS1 */
   ros2?: boolean;
   /**
    * Return the original type names used in the file, without normalizing to
@@ -152,7 +154,7 @@ function findTypeByName(types: MessageDefinition[], name: string): MessageDefini
   return matches[0];
 }
 
-function normalizeType(type: string): string {
+export function normalizeType(type: string): string {
   // Normalize deprecated aliases
   if (type === "char") {
     return "uint8";
