@@ -113,11 +113,6 @@ export function parseRos2idl(messageDefinition: string): MessageDefinition[] {
   return buildRos2idlType(messageDefinition, ROS2IDL_GRAMMAR);
 }
 
-type ConstantVariableValue = {
-  usesConstant: boolean;
-  name: string;
-};
-
 type RawIdlDefinition = {
   definitions: (RawIdlDefinition | RawIdlFieldDefinition)[];
   name: string;
@@ -126,8 +121,8 @@ type RawIdlDefinition = {
 
 type RawIdlFieldDefinition = Partial<MessageDefinitionField> & {
   definitions: undefined;
-  definitionType?: "typedef";
-  value?: ConstantValue | ConstantVariableValue;
+  definitionType: "typedef";
+  constantUsage?: [keyof MessageDefinitionField, string][];
 };
 
 function buildRos2idlType(messageDefinition: string, grammar: Grammar): MessageDefinition[] {
@@ -181,35 +176,32 @@ function postProcessIdlDefinitions(definitions: RawIdlDefinition[]): MessageDefi
       }
     });
 
-    // modify ast nodes in-place to replace typedefs and constants
+    // modify ast field nodes in-place to replace typedefs and constants
     // also fix up names to use ros package resource names
     traverseIdl([definition], (path) => {
       const node = path[path.length - 1]!;
       if (node.definitions != undefined) {
         return;
       }
-
-      const nodeKeys = Object.keys(node) as (keyof RawIdlFieldDefinition)[];
-      // need to iterate through keys because this can occur on arrayLength, upperBound, arrayUpperBound, value, defaultValue
-      for (const key of nodeKeys) {
-        // can't narrow type by doing typeof node[key] === "object" even though it's the only object type
-        if (typeof node[key] === "object" && (node[key] as ConstantVariableValue).usesConstant) {
-          const constantName = (node[key] as ConstantVariableValue).name;
-          if (constantValueMap.has(constantName)) {
-            (node[key] as ConstantValue) = constantValueMap.get(constantName);
-          } else {
-            throw new Error(
-              `Could not find constant <${constantName}> for field <${
-                node.name ?? "undefined"
-              }> in <${definition.name}>`,
-            );
-          }
-        }
-      }
       // replace field definition with corresponding typedef aliased definition
       if (node.type && typedefMap.has(node.type)) {
         Object.assign(node, { ...typedefMap.get(node.type), name: node.name });
       }
+
+      // need to iterate through keys because this can occur on arrayLength, upperBound, arrayUpperBound, value, defaultValue
+      for (const [key, constantName] of node.constantUsage ?? []) {
+        if (constantValueMap.has(constantName)) {
+          (node[key] as ConstantValue) = constantValueMap.get(constantName);
+        } else {
+          throw new Error(
+            `Could not find constant <${constantName}> for field <${
+              node.name ?? "undefined"
+            }> in <${definition.name}>`,
+          );
+        }
+      }
+      delete node.constantUsage;
+
       if (node.type != undefined) {
         node.type = node.type.replace(/::/g, "/");
       }

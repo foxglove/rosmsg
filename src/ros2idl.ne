@@ -123,6 +123,15 @@ function getIntOrConstantValue(d) {
   return d?.value ? {usesConstant: true, name: d.value} : undefined;  
 }
 
+function aggregateConstantUsage(dcl) {
+  const entries = Object.entries(dcl).filter(
+    ([key, value]) => value?.usesConstant === true
+  ).map(([key, {name}]) => ([key, name]));
+  return {
+    ...dcl,
+    constantUsage: entries,
+  };
+}
 %}
 
 @lexer lexer
@@ -181,7 +190,7 @@ typedefWithAnnotations -> multiAnnotations (
  | typedef allTypes fieldName
  | typedef sequenceType fieldName
 ) {% d => {
-  const def = extend(d.flat(1));
+  const def = aggregateConstantUsage(extend(d.flat(1)));
   return {
     definitionType: "typedef",
     ...def,
@@ -199,7 +208,9 @@ fieldWithAnnotation -> multiAnnotations fieldDcl {% d=> {
     possibleAnnotations = d[0];
   }
   const fields = d[1];
-  const finalDefs = fields.map((def) => extend([...possibleAnnotations, def]));
+  const finalDefs = fields.map((def) => 
+    aggregateConstantUsage(extend([...possibleAnnotations, def]))
+  );
   return finalDefs;
 } %}
 
