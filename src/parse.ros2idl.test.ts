@@ -1,4 +1,4 @@
-import { parseRos2idl as parse } from "./parse";
+import { parseRos2idl as parse } from "./parseRos2idl";
 
 describe("rosidl grammar tests", () => {
   it("parses a module with an enclosed struct and module", () => {

@@ -1,4 +1,4 @@
-import { parseRos2idl as parse } from "./parse";
+import { parseRos2idl as parse } from "./parseRos2idl";
 
 const trackedObjectSchema = `================================================================================
 IDL: autoware_auto_perception_msgs/msg/TrackedObjects
