@@ -112,62 +112,22 @@ function extend(objs) {
 function noop() {
   return null;
 }
-// name of typedef to definition (alias for types)
-const typedefMap = {};
-
-// Constants can be used in defs to define lengths of arrays and strings
-// they should be defined before the def that uses them
-const constantToValueMap = {};
 
 function getIntOrConstantValue(d) {
   const int = parseInt(d);
   if(!isNaN(int)) {
-    return int
+    return int;
   }
 
   // handle %NAME token
-  return d?.value ? constantToValueMap[d.value] : undefined;  
-}
-
-function processComplexModule(d) {
-  const moduleName = d[0][2].name;
-  const defs = d[0][4];
-  // returning array of message definitions
-  const msgDefs = [];
-  function traverse(node, processNode) {
-    if(Array.isArray(node)) {
-      node.forEach(n => traverse(n, processNode));
-    } else {
-      processNode(node);
-    }
-  }
-  // Need to update the names of modules and structs to be in their respective namespaces
-  traverse(d[0], (sub) => {
-    if(sub && sub.definitions) {
-      sub.name = `${moduleName}/${sub.name}`;
-      msgDefs.push(sub);
-    }
-  });
-  
-  
-  return msgDefs;
-}
-
-function processConstantModule(d) {
-  const moduleName = d[0][2].name;
-  const enclosedConstants = d[0][4];
-  // need to return array here to keep same signature as processComplexModule
-  return [{
-    name: moduleName,
-    definitions: enclosedConstants.flat(1),
-  }];
+  return d?.value ? {usesConstant: true, name: d.value} : undefined;  
 }
 
 %}
 
 @lexer lexer
 
-main -> (header:? importDcl:* module:+):+ {% d => {
+main -> (header:? importDcl:* definition:+):+ {% d => {
   return d[0].flatMap(inner => inner[2].flat());
 }
 %}
@@ -177,41 +137,61 @@ header -> %HEADER {% noop %}
 # support <import> or "import" includes - just ignored
 importDcl -> "#" "include" (%STRING | "<" %NAME ("/" %NAME):* "." "idl" ">") {% noop %}
 
-# constant modules need to be separate from complex modules since they shouldn't mix
-module  -> (multiAnnotations "module" fieldName "{" (typedefDcl|constantDcl):+ "}" semi) {% processConstantModule %}
-  | (multiAnnotations "module" fieldName "{" (typedefDcl|structWithAnnotation|module):+ "}" semi) {% processComplexModule %}
+moduleDcl  -> multiAnnotations "module" fieldName "{" (definition):+ "}" {% 
+function processModule(d) {
+  const moduleName = d[2].name;
+  const defs = d[4];
+  // need to return array here to keep same signature as processComplexModule
+  return {
+    definitionType: "module",
+    name: moduleName,
+    definitions: defs.flat(1),
+  };
+}
+%}
 
+definition -> (
+    typeDcl
+  | constantDcl
+  | moduleDcl
+) semi {% d => d[0][0] %}
 
-structWithAnnotation -> multiAnnotations struct {% 
+typeDcl -> (
+    structWithAnnotations
+  | typedefWithAnnotations
+) {% d => d[0][0] %}
+
+structWithAnnotations -> multiAnnotations struct {% 
  // default values don't apply to structs so we can just ignore all annotations on structs
  d => d[1]
 %}
 
-struct -> "struct" fieldName "{" (declaration):+ "}" semi {% d => {
+struct -> "struct" fieldName "{" (member):+ "}" {% d => {
   const name = d[1].name;
   const definitions = d[3].flat(2).filter(def => def !== null);
   return {
+    definitionType: 'struct',
     name,
     definitions,
   };
 } %}
-
-typedefDcl -> typedefWithAnnotations semi {% noop %}
 
 typedefWithAnnotations -> multiAnnotations (
    typedef allTypes fieldName arrayLength
  | typedef allTypes fieldName
  | typedef sequenceType fieldName
 ) {% d => {
-  const [{name}] = d[1].splice(2, 1);
   const def = extend(d.flat(1));
-  typedefMap[name] = extend(d.flat(1));
-  return null;
+  return {
+    definitionType: "typedef",
+    ...def,
+  };
 } %}
 
 typedef -> "typedef" {% noop %}
-constantDcl -> multiAnnotations constType semi {% d => d[1] %}
-declaration -> fieldWithAnnotation semi {% d => d[0] %}
+constantDcl -> multiAnnotations constType{% d => d[1] %}
+
+member -> fieldWithAnnotation semi {% d => d[0] %}
 
 fieldWithAnnotation -> multiAnnotations fieldDcl {% d=> {
   let possibleAnnotations = [];
@@ -231,7 +211,7 @@ fieldDcl -> (
   const names = d[0].splice(1, 1)[0];
   // create a definition for each name
   const defs = names.map((nameObj) => extend([...d[0], nameObj]));
-  return defs
+  return defs;
 } %}
 
 multiFieldNames -> fieldName ("," fieldName):* {%
@@ -272,7 +252,6 @@ constType -> (
   const def = extend(d[0]);
   const name = def.name;
   const value = def.value;
-  constantToValueMap[name] = value;
   return def;
 } %}
 
@@ -307,7 +286,7 @@ floatAssignment ->   %EQ (SIGNED_FLOAT | FLOAT) {% ([, num]) => ({valueText: num
 intAssignment -> %EQ (SIGNED_INT | INT) {% ([, num]) => ({valueText: num[0], value: parseInt(num[0])}) %}
 stringAssignment -> %EQ STR {% ([, str]) => ({valueText: str, value: str}) %}
 booleanAssignment -> %EQ BOOLEAN {% ([, bool]) => ({valueText: bool, value: bool === "TRUE"}) %}
-variableAssignment -> %EQ %NAME {% ([, name]) => ({valueText: name.value, value: constantToValueMap[name.value]}) %}
+variableAssignment -> %EQ %NAME {% ([, name]) => ({valueText: name.value, value: {usesConstant: true, name: name.value}}) %}
 
 allTypes -> (
     primitiveTypes
@@ -321,11 +300,13 @@ primitiveTypes -> (
 ) {% d => ({...d[0][0], isComplex: false}) %}
 
 customType -> %NAME {% d => {
-  let possibleTypedef = typedefMap[d[0].value];
-  if(possibleTypedef) {
-    return possibleTypedef;
-  }
-  return {type: d[0].value.replaceAll("::", "/"), isComplex: true }
+  const typeName = d[0].value;
+  // won't be replaced later with a typedef alias definition
+  // typedefs can't include :: in their name, but they can be complex
+  const isDefinitelyComplex = typeName.includes("::");
+  
+  // post process will go through and replace typedefs with their actual type
+  return {type: typeName, isComplex: isDefinitelyComplex };
 }%}
 
 stringType ->  ("string"|"wstring") ("<" (INT | %NAME) ">"):? {% d => {
@@ -363,7 +344,7 @@ numericType -> (
 ) {% (d) => { 
   const typeString = d[0].map((t) => t?.value).filter(t => !!t).join(" ");
   let type = numericTypeMap[typeString];
-  return { type: type ? type : typeString }; ;
+  return { type: type ? type : typeString };
 }
 %}
 
