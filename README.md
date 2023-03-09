@@ -15,18 +15,18 @@ This library supports both [ROS1](http://wiki.ros.org/msg), [ROS 2](https://docs
 ```Typescript
 import { parse, parseRos2idl, stringify } from "@foxglove/rosmsg";
 
-const definitionStr = `# geometry_msgs/Pose
-geometry_msgs/Point position
-geometry_msgs/Quaternion orientation
+const definitionStr = `# geometry_msgs/msg/Pose
+geometry_msgs/msg/Point position
+geometry_msgs/msg/Quaternion orientation
 
 ===
-MSG: geometry_msgs/Point
+MSG: geometry_msgs/msg/Point
 float64 x
 float64 y
 float64 z
 
 ===
-MSG: geometry_msgs/Quaternion
+MSG: geometry_msgs/msg/Quaternion
 float64 x
 float64 y
 float64 z
@@ -41,35 +41,41 @@ const messageDefinition = parse(definitionStr, {ros2: true}); // for ROS 2 defin
 // ROS2IDL equivalent example
 const ros2idlDefinitionStr = `
 ================================================================================
-IDL: geometry_msgs/Pose
+IDL: geometry_msgs/msg/Pose
 
 module geometry_msgs {
-  struct Pose {
-    geometry_msgs::Point position;
-    geometry_msgs::Quaternion orientation;
+  module msg {
+    struct Pose {
+      geometry_msgs::msg::Point position;
+      geometry_msgs::msg::Quaternion orientation;
+    };
   };
 };
 
 ================================================================================
-IDL: geometry_msgs/Point
+IDL: geometry_msgs/msg/Point
 
 module geometry_msgs {
-  struct Point {
-    long double x;
-    long double y;
-    long double z;
+  module msg {
+    struct Point {
+      long double x;
+      long double y;
+      long double z;
+    };
   };
 };
 
 ================================================================================
-IDL: geometry_msgs/Quaternion
+IDL: geometry_msgs/msg/Quaternion
 
 module geometry_msgs {
-  struct Quaternion {
-    long double x;
-    long double y;
-    long double z;
-    long double w;
+  module msg {
+    struct Quaternion {
+      long double x;
+      long double y;
+      long double z;
+      long double w;
+    };
   };
 };
 `;
@@ -87,13 +93,13 @@ Prints:
   {
     "definitions": [
       {
-        "type": "geometry_msgs/Point",
+        "type": "geometry_msgs/msg/Point",
         "isArray": false,
         "name": "position",
         "isComplex": true
       },
       {
-        "type": "geometry_msgs/Quaternion",
+        "type": "geometry_msgs/msg/Quaternion",
         "isArray": false,
         "name": "orientation",
         "isComplex": true
@@ -101,7 +107,7 @@ Prints:
     ]
   },
   {
-    "name": "geometry_msgs/Point",
+    "name": "geometry_msgs/msg/Point",
     "definitions": [
       {
         "type": "float64",
@@ -124,7 +130,7 @@ Prints:
     ]
   },
   {
-    "name": "geometry_msgs/Quaternion",
+    "name": "geometry_msgs/msg/Quaternion",
     "definitions": [
       {
         "type": "float64",
