@@ -41,6 +41,16 @@ const messageDefinition = parse(definitionStr, {ros2: true}); // for ROS 2 defin
 // ROS2IDL equivalent example
 const ros2idlDefinitionStr = `
 ================================================================================
+IDL: geometry_msgs/Pose
+
+module geometry_msgs {
+  struct Pose {
+    geometry_msgs::Point position;
+    geometry_msgs::Quaternion orientation;
+  };
+};
+
+================================================================================
 IDL: geometry_msgs/Point
 
 module geometry_msgs {
