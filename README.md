@@ -8,25 +8,25 @@
 
 [The Robot Operating System (ROS)](https://www.ros.org/) defines a simplified message description language for describing data types. This library parses those message definitions and can round trip them back into a canonical string format suitable for checksum generation. The parsed definitions are useful for serialization or deserialization when paired with other libraries.
 
-This library supports both [ROS1](http://wiki.ros.org/msg) and [ROS2](https://docs.ros.org/en/galactic/Concepts/About-ROS-Interfaces.html) message definitions.
+This library supports both [ROS1](http://wiki.ros.org/msg), [ROS 2](https://docs.ros.org/en/galactic/Concepts/About-ROS-Interfaces.html), and the [ROS 2 IDL subset](https://design.ros2.org/articles/idl_interface_definition.html)message definitions.
 
 ## Usage
 
 ```Typescript
-import { parse, stringify } from "@foxglove/rosmsg";
+import { parse, parseRos2idl, stringify } from "@foxglove/rosmsg";
 
-const definitionStr = `# geometry_msgs/Pose
-geometry_msgs/Point position
-geometry_msgs/Quaternion orientation
+const definitionStr = `# geometry_msgs/msg/Pose
+geometry_msgs/msg/Point position
+geometry_msgs/msg/Quaternion orientation
 
 ===
-MSG: geometry_msgs/Point
+MSG: geometry_msgs/msg/Point
 float64 x
 float64 y
 float64 z
 
 ===
-MSG: geometry_msgs/Quaternion
+MSG: geometry_msgs/msg/Quaternion
 float64 x
 float64 y
 float64 z
@@ -37,6 +37,50 @@ const messageDefinition = parse(definitionStr, {ros2: true}); // for ROS 2 defin
 
 // stringify(messageDefinition) will return a canonical string, similar to
 // _definitionStr_
+
+// ROS2IDL equivalent example
+const ros2idlDefinitionStr = `
+================================================================================
+IDL: geometry_msgs/msg/Pose
+
+module geometry_msgs {
+  module msg {
+    struct Pose {
+      geometry_msgs::msg::Point position;
+      geometry_msgs::msg::Quaternion orientation;
+    };
+  };
+};
+
+================================================================================
+IDL: geometry_msgs/msg/Point
+
+module geometry_msgs {
+  module msg {
+    struct Point {
+      long double x;
+      long double y;
+      long double z;
+    };
+  };
+};
+
+================================================================================
+IDL: geometry_msgs/msg/Quaternion
+
+module geometry_msgs {
+  module msg {
+    struct Quaternion {
+      long double x;
+      long double y;
+      long double z;
+      long double w;
+    };
+  };
+};
+`;
+
+const messageDefinition = parseRos2idl(ros2idlDefinitionStr);
 
 // print the parsed message definition structure
 console.log(JSON.stringify(messageDefinition, null, 2));
@@ -49,13 +93,13 @@ Prints:
   {
     "definitions": [
       {
-        "type": "geometry_msgs/Point",
+        "type": "geometry_msgs/msg/Point",
         "isArray": false,
         "name": "position",
         "isComplex": true
       },
       {
-        "type": "geometry_msgs/Quaternion",
+        "type": "geometry_msgs/msg/Quaternion",
         "isArray": false,
         "name": "orientation",
         "isComplex": true
@@ -63,7 +107,7 @@ Prints:
     ]
   },
   {
-    "name": "geometry_msgs/Point",
+    "name": "geometry_msgs/msg/Point",
     "definitions": [
       {
         "type": "float64",
@@ -86,7 +130,7 @@ Prints:
     ]
   },
   {
-    "name": "geometry_msgs/Quaternion",
+    "name": "geometry_msgs/msg/Quaternion",
     "definitions": [
       {
         "type": "float64",
