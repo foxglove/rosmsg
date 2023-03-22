@@ -292,7 +292,6 @@ module rosidl_parser {
             unsigned long long unsigned_long_long_value;
             float float_value;
             double double_value;
-            long double long_double_value;
             char char_value;
             wchar wchar_value;
             boolean boolean_value;
@@ -348,11 +347,6 @@ module rosidl_parser {
           {
             type: "float64",
             name: "double_value",
-            isComplex: false,
-          },
-          {
-            type: "float64",
-            name: "long_double_value",
             isComplex: false,
           },
           {
@@ -744,7 +738,7 @@ module rosidl_parser {
       const short SHORT_CONSTANT = -23;
       const unsigned long UNSIGNED_LONG_CONSTANT = 42;
       const float FLOAT_CONSTANT = 1.25;
-      const long double EXP_DOUBLE_CONSTANT = 1.25e-3;
+      const double EXP_DOUBLE_CONSTANT = 1.25e-3;
     };
   };
 };
