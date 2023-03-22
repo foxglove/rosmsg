@@ -58,9 +58,9 @@ IDL: geometry_msgs/msg/Point
 module geometry_msgs {
   module msg {
     struct Point {
-      long double x;
-      long double y;
-      long double z;
+      double x;
+      double y;
+      double z;
     };
   };
 };
@@ -71,10 +71,10 @@ IDL: geometry_msgs/msg/Quaternion
 module geometry_msgs {
   module msg {
     struct Quaternion {
-      long double x;
-      long double y;
-      long double z;
-      long double w;
+      double x;
+      double y;
+      double z;
+      double w;
     };
   };
 };
