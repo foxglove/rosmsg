@@ -346,7 +346,7 @@ module rosidl_parser {
             isComplex: false,
           },
           {
-            type: "float32",
+            type: "float64",
             name: "double_value",
             isComplex: false,
           },

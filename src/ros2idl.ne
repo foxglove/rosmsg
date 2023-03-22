@@ -92,7 +92,7 @@ const numericTypeMap = {
   "short": "int16",
   "long": "int32",
   "long long": "int64",
-  "double": "float32",
+  "double": "float64",
   "float": "float32",
   "long double": "float64",
   "octet": "byte",
