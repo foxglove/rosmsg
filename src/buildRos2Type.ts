@@ -211,6 +211,24 @@ function normalizeType(type: string): string {
   return type;
 }
 export function buildRos2Type(lines: { line: string }[]): MessageDefinition {
+  // Special case: Empty message definition (e.g. std_msgs/Empty).
+  // Since IDL structs can't be empty, ROS adds a uint8 field in case the
+  // message definition is empty (e.g. std_msgs/Empty):
+  // https://github.com/ros2/rosidl/blob/e3b71ece/rosidl_adapter/rosidl_adapter/resource/struct.idl.em#L101
+  if (lines.length === 0) {
+    return {
+      definitions: [
+        {
+          name: "structure_needs_at_least_one_member",
+          type: "uint8",
+          isComplex: false,
+          isArray: false,
+          isConstant: false,
+        },
+      ],
+    };
+  }
+
   const definitions: MessageDefinitionField[] = [];
   let complexTypeName: string | undefined;
   for (const { line } of lines) {

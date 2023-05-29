@@ -1043,4 +1043,21 @@ string<=10[<=5] up_to_five_strings_up_to_ten_characters_each
       },
     ]);
   });
+
+  it("empty message definition contains at least one member", () => {
+    expect(parse("", { ros2: true })).toEqual([
+      {
+        definitions: [
+          {
+            name: "structure_needs_at_least_one_member",
+            type: "uint8",
+            isComplex: false,
+            isArray: false,
+            isConstant: false,
+          },
+        ],
+        name: undefined,
+      },
+    ]);
+  });
 });
