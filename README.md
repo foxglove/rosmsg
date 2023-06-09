@@ -10,7 +10,110 @@
 
 This library supports both [ROS1](http://wiki.ros.org/msg), [ROS 2](https://docs.ros.org/en/galactic/Concepts/About-ROS-Interfaces.html), and the [ROS 2 IDL subset](https://design.ros2.org/articles/idl_interface_definition.html)message definitions.
 
-## Usage
+## ROS 1 Definition Usage
+
+```Typescript
+import { parse, stringify } from "@foxglove/rosmsg";
+
+const definitionStr = `# geometry_msgs/Pose
+geometry_msgs/Point position
+geometry_msgs/Quaternion orientation
+
+===
+MSG: geometry_msgs/Point
+float64 x
+float64 y
+float64 z
+
+===
+MSG: geometry_msgs/Quaternion
+float64 x
+float64 y
+float64 z
+float64 w`;
+
+const messageDefinition = parse(definitionStr);
+
+// print the parsed message definition structure
+console.log(JSON.stringify(messageDefinition, null, 2));
+```
+
+Prints:
+
+```JSON
+[
+  {
+    "definitions": [
+      {
+        "type": "geometry_msgs/Point",
+        "isArray": false,
+        "name": "position",
+        "isComplex": true
+      },
+      {
+        "type": "geometry_msgs/Quaternion",
+        "isArray": false,
+        "name": "orientation",
+        "isComplex": true
+      }
+    ]
+  },
+  {
+    "name": "geometry_msgs/Point",
+    "definitions": [
+      {
+        "type": "float64",
+        "isArray": false,
+        "name": "x",
+        "isComplex": false
+      },
+      {
+        "type": "float64",
+        "isArray": false,
+        "name": "y",
+        "isComplex": false
+      },
+      {
+        "type": "float64",
+        "isArray": false,
+        "name": "z",
+        "isComplex": false
+      }
+    ]
+  },
+  {
+    "name": "geometry_msgs/Quaternion",
+    "definitions": [
+      {
+        "type": "float64",
+        "isArray": false,
+        "name": "x",
+        "isComplex": false
+      },
+      {
+        "type": "float64",
+        "isArray": false,
+        "name": "y",
+        "isComplex": false
+      },
+      {
+        "type": "float64",
+        "isArray": false,
+        "name": "z",
+        "isComplex": false
+      },
+      {
+        "type": "float64",
+        "isArray": false,
+        "name": "w",
+        "isComplex": false
+      }
+    ]
+  }
+]
+```
+
+## ROS 2 Definition Usage
 
 ```Typescript
 import { parse, parseRos2idl, stringify } from "@foxglove/rosmsg";
@@ -32,8 +135,7 @@ float64 y
 float64 z
 float64 w`;
 
-const messageDefinition = parse(definitionStr);
-const messageDefinition = parse(definitionStr, {ros2: true}); // for ROS 2 definitions
+const messageDefinition = parse(definitionStr, {ros2: true});
 
 // stringify(messageDefinition) will return a canonical string, similar to
 // _definitionStr_
