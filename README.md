@@ -10,7 +10,7 @@
 
 This library supports both [ROS1](http://wiki.ros.org/msg), [ROS 2](https://docs.ros.org/en/galactic/Concepts/About-ROS-Interfaces.html), and the [ROS 2 IDL subset](https://design.ros2.org/articles/idl_interface_definition.html)message definitions.
 
-## ROS (1) Definition Usage
+## ROS 1 Definition Usage
 
 ```Typescript
 import { parse, stringify } from "@foxglove/rosmsg";
