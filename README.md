@@ -37,51 +37,6 @@ const messageDefinition = parse(definitionStr, {ros2: true}); // for ROS 2 defin
 
 // stringify(messageDefinition) will return a canonical string, similar to
 // _definitionStr_
-
-// ROS2IDL equivalent example
-const ros2idlDefinitionStr = `
-================================================================================
-IDL: geometry_msgs/msg/Pose
-
-module geometry_msgs {
-  module msg {
-    struct Pose {
-      geometry_msgs::msg::Point position;
-      geometry_msgs::msg::Quaternion orientation;
-    };
-  };
-};
-
-================================================================================
-IDL: geometry_msgs/msg/Point
-
-module geometry_msgs {
-  module msg {
-    struct Point {
-      double x;
-      double y;
-      double z;
-    };
-  };
-};
-
-================================================================================
-IDL: geometry_msgs/msg/Quaternion
-
-module geometry_msgs {
-  module msg {
-    struct Quaternion {
-      double x;
-      double y;
-      double z;
-      double w;
-    };
-  };
-};
-`;
-
-const messageDefinition = parseRos2idl(ros2idlDefinitionStr);
-
 // print the parsed message definition structure
 console.log(JSON.stringify(messageDefinition, null, 2));
 ```
@@ -160,6 +115,10 @@ Prints:
   }
 ]
 ```
+
+## ROS 2 IDL Support
+
+See (`@foxglove/ros2idl-parser`)[https://github.com/foxglove/omgidl/packages/ros2idl-parser] for our implementation of `ros2idl` schema support.
 
 ## License
 
