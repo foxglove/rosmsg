@@ -1,7 +1,7 @@
 {
   "name": "@foxglove/rosmsg",
   "version": "4.2.2",
-  "description": "Parser for ROS .msg and .idl definitions",
+  "description": "Parser for ROS and ROS 2 .msg definitions",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -16,7 +16,6 @@
     "msg",
     "srv",
     "msgdef",
-    "idl",
     "parser",
     "grammar"
   ],

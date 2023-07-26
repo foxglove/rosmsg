@@ -8,12 +8,12 @@
 
 [The Robot Operating System (ROS)](https://www.ros.org/) defines a simplified message description language for describing data types. This library parses those message definitions and can round trip them back into a canonical string format suitable for checksum generation. The parsed definitions are useful for serialization or deserialization when paired with other libraries.
 
-This library supports both [ROS1](http://wiki.ros.org/msg), [ROS 2](https://docs.ros.org/en/galactic/Concepts/About-ROS-Interfaces.html), and the [ROS 2 IDL subset](https://design.ros2.org/articles/idl_interface_definition.html)message definitions.
+This library supports both [ROS1](http://wiki.ros.org/msg) and [ROS 2](https://docs.ros.org/en/galactic/Concepts/About-ROS-Interfaces.html) message definitions.
 
 ## Usage
 
 ```Typescript
-import { parse, parseRos2idl, stringify } from "@foxglove/rosmsg";
+import { parse, stringify } from "@foxglove/rosmsg";
 
 const definitionStr = `# geometry_msgs/msg/Pose
 geometry_msgs/msg/Point position
