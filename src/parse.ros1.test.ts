@@ -490,4 +490,70 @@ describe("fixupTypes", () => {
     expect(types[1]!.definitions).toHaveLength(1);
     expect(types[1]!.definitions[0]!.type).toEqual("float64");
   });
+
+  it("does not mixup types with same name but different namespace", () => {
+    const messageDefinition = `
+      MSG: visualization_msgs/Marker
+      int32 a
+
+      ===
+      MSG: aruco_msgs/Marker
+      int32 b
+
+      ===
+      MSG: visualization_msgs/MarkerArray
+      Marker[] a
+
+      ===
+      MSG: aruco_msgs/MarkerArray
+      Marker[] b
+    `;
+    const types = parse(messageDefinition);
+    expect(types).toEqual([
+      {
+        name: "visualization_msgs/Marker",
+        definitions: [
+          {
+            type: "int32",
+            isArray: false,
+            name: "a",
+            isComplex: false,
+          },
+        ],
+      },
+      {
+        name: "aruco_msgs/Marker",
+        definitions: [
+          {
+            type: "int32",
+            isArray: false,
+            name: "b",
+            isComplex: false,
+          },
+        ],
+      },
+      {
+        name: "visualization_msgs/MarkerArray",
+        definitions: [
+          {
+            type: "visualization_msgs/Marker",
+            isArray: true,
+            name: "a",
+            isComplex: true,
+          },
+        ],
+      },
+      {
+        name: "aruco_msgs/MarkerArray",
+        definitions: [
+          {
+            type: "aruco_msgs/Marker",
+            isArray: true,
+            name: "b",
+            isComplex: true,
+          },
+        ],
+      },
+    ]);
+  });
 });

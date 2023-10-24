@@ -85,10 +85,13 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Me
 }
 
 export function fixupTypes(types: MessageDefinition[]): void {
-  types.forEach(({ definitions }) => {
+  types.forEach(({ definitions, name }) => {
     definitions.forEach((definition) => {
       if (definition.isComplex === true) {
-        const foundName = findTypeByName(types, definition.type).name;
+        // The type might be under a namespace (e.g. std_msgs or std_msgs/msg) which is required
+        // to uniquely retrieve the type by its name.
+        const typeNamespace = name?.split("/").slice(0, -1).join("/");
+        const foundName = findTypeByName(types, definition.type, typeNamespace).name;
         if (foundName == undefined) {
           throw new Error(`Missing type definition for ${definition.type}`);
         }
@@ -132,7 +135,11 @@ function simpleTokenization(line: string): string[] {
     .filter((word) => word);
 }
 
-function findTypeByName(types: MessageDefinition[], name: string): MessageDefinition {
+function findTypeByName(
+  types: MessageDefinition[],
+  name: string,
+  typeNamespace?: string,
+): MessageDefinition {
   const matches = types.filter((type) => {
     const typeName = type.name ?? "";
     // if the search is empty, return unnamed types
@@ -141,7 +148,11 @@ function findTypeByName(types: MessageDefinition[], name: string): MessageDefini
     }
     // return if the search is in the type name
     // or matches exactly if a fully-qualified name match is passed to us
-    const nameEnd = name.includes("/") ? name : `/${name}`;
+    const nameEnd = name.includes("/")
+      ? name
+      : typeNamespace
+      ? `${typeNamespace}/${name}`
+      : `/${name}`;
     return typeName.endsWith(nameEnd);
   });
   if (matches[0] == undefined) {
