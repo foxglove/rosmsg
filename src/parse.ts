@@ -84,6 +84,10 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Me
   return types;
 }
 
+/**
+ * Normalize type names of complex types to fully qualified type names.
+ * Example: `Marker` (defined in `visualization_msgs/MarkerArray` message) becomes `visualization_msgs/Marker`.
+ */
 export function fixupTypes(types: MessageDefinition[]): void {
   types.forEach(({ definitions, name }) => {
     definitions.forEach((definition) => {
@@ -146,14 +150,17 @@ function findTypeByName(
     if (name.length === 0) {
       return typeName.length === 0;
     }
-    // return if the search is in the type name
-    // or matches exactly if a fully-qualified name match is passed to us
-    const nameEnd = name.includes("/")
-      ? name
-      : typeNamespace
-      ? `${typeNamespace}/${name}`
-      : `/${name}`;
-    return typeName.endsWith(nameEnd);
+
+    if (name.includes("/")) {
+      // Fully-qualified name, match exact
+      return typeName === name;
+    } else if (typeNamespace) {
+      // Type namespace is given, create fully-qualified name and match exact
+      return typeName === `${typeNamespace}/${name}`;
+    } else {
+      // Fallback, return if the search is in the type name
+      return typeName.endsWith(`/${name}`);
+    }
   });
   if (matches[0] == undefined) {
     throw new Error(
