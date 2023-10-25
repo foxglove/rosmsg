@@ -84,11 +84,18 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Me
   return types;
 }
 
+/**
+ * Normalize type names of complex types to fully qualified type names.
+ * Example: `Marker` (defined in `visualization_msgs/MarkerArray` message) becomes `visualization_msgs/Marker`.
+ */
 export function fixupTypes(types: MessageDefinition[]): void {
-  types.forEach(({ definitions }) => {
+  types.forEach(({ definitions, name }) => {
     definitions.forEach((definition) => {
       if (definition.isComplex === true) {
-        const foundName = findTypeByName(types, definition.type).name;
+        // The type might be under a namespace (e.g. std_msgs or std_msgs/msg) which is required
+        // to uniquely retrieve the type by its name.
+        const typeNamespace = name?.split("/").slice(0, -1).join("/");
+        const foundName = findTypeByName(types, definition.type, typeNamespace).name;
         if (foundName == undefined) {
           throw new Error(`Missing type definition for ${definition.type}`);
         }
@@ -132,22 +139,37 @@ function simpleTokenization(line: string): string[] {
     .filter((word) => word);
 }
 
-function findTypeByName(types: MessageDefinition[], name: string): MessageDefinition {
+function findTypeByName(
+  types: MessageDefinition[],
+  name: string,
+  typeNamespace?: string,
+): MessageDefinition {
   const matches = types.filter((type) => {
     const typeName = type.name ?? "";
     // if the search is empty, return unnamed types
     if (name.length === 0) {
       return typeName.length === 0;
     }
-    // return if the search is in the type name
-    // or matches exactly if a fully-qualified name match is passed to us
-    const nameEnd = name.includes("/") ? name : `/${name}`;
-    return typeName.endsWith(nameEnd);
+
+    if (name.includes("/")) {
+      // Fully-qualified name, match exact
+      return typeName === name;
+    } else if (typeNamespace) {
+      // Type namespace is given, create fully-qualified name and match exact
+      return typeName === `${typeNamespace}/${name}`;
+    } else {
+      // Fallback, return if the search is in the type name
+      return typeName.endsWith(`/${name}`);
+    }
   });
   if (matches[0] == undefined) {
     throw new Error(
       `Expected 1 top level type definition for '${name}' but found ${matches.length}`,
     );
+  }
+
+  if (matches.length > 1) {
+    throw new Error(`Cannot unambiguously determine fully-qualified type name for '${name}'`);
   }
   return matches[0];
 }

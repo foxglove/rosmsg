@@ -746,7 +746,7 @@ describe("parseMessageDefinition", () => {
   it("parses rcl_interfaces/msg/Log", () => {
     const messageDefinition = `##
 ## Severity level constants
-## 
+##
 ## These logging levels follow the Python Standard
 ## https://docs.python.org/3/library/logging.html#logging-levels
 ## And are implemented in rcutils as well
@@ -1040,6 +1040,72 @@ string<=10[<=5] up_to_five_strings_up_to_ten_characters_each
           },
         ],
         name: undefined,
+      },
+    ]);
+  });
+
+  it("does not mixup types with same name but different namespace", () => {
+    const messageDefinition = `
+      MSG: visualization_msgs/msg/Marker
+      int32 a
+
+      ===
+      MSG: aruco_msgs/msg/Marker
+      int32 b
+
+      ===
+      MSG: visualization_msgs/msg/MarkerArray
+      Marker[] a
+
+      ===
+      MSG: aruco_msgs/msg/MarkerArray
+      Marker[] b
+    `;
+    const types = parse(messageDefinition, { ros2: true });
+    expect(types).toEqual([
+      {
+        name: "visualization_msgs/msg/Marker",
+        definitions: [
+          {
+            type: "int32",
+            isArray: false,
+            name: "a",
+            isComplex: false,
+          },
+        ],
+      },
+      {
+        name: "aruco_msgs/msg/Marker",
+        definitions: [
+          {
+            type: "int32",
+            isArray: false,
+            name: "b",
+            isComplex: false,
+          },
+        ],
+      },
+      {
+        name: "visualization_msgs/msg/MarkerArray",
+        definitions: [
+          {
+            type: "visualization_msgs/msg/Marker",
+            isArray: true,
+            name: "a",
+            isComplex: true,
+          },
+        ],
+      },
+      {
+        name: "aruco_msgs/msg/MarkerArray",
+        definitions: [
+          {
+            type: "aruco_msgs/msg/Marker",
+            isArray: true,
+            name: "b",
+            isComplex: true,
+          },
+        ],
       },
     ]);
   });
