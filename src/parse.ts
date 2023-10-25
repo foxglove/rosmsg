@@ -167,6 +167,10 @@ function findTypeByName(
       `Expected 1 top level type definition for '${name}' but found ${matches.length}`,
     );
   }
+
+  if (matches.length > 1) {
+    throw new Error(`Cannot unambiguously determine fully-qualified type name for '${name}'`);
+  }
   return matches[0];
 }
 
