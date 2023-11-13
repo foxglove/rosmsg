@@ -556,4 +556,71 @@ describe("fixupTypes", () => {
       },
     ]);
   });
+
+  it("correctly resolves Header to std_msgs/Header", () => {
+    const messageDefinition = `
+      StampedBool stamped_bool
+      ================================================================================
+      MSG: custom_msg/StampedBool
+      Header header
+      bool data
+      ================================================================================
+      MSG: std_msgs/Header
+      uint32 seq
+      time stamp
+      string frame_id`;
+    const types = parse(messageDefinition);
+    expect(types).toEqual([
+      {
+        definitions: [
+          {
+            type: "custom_msg/StampedBool",
+            isArray: false,
+            name: "stamped_bool",
+            isComplex: true,
+          },
+        ],
+      },
+      {
+        name: "custom_msg/StampedBool",
+        definitions: [
+          {
+            type: "std_msgs/Header",
+            isArray: false,
+            name: "header",
+            isComplex: true,
+          },
+          {
+            type: "bool",
+            isArray: false,
+            name: "data",
+            isComplex: false,
+          },
+        ],
+      },
+      {
+        name: "std_msgs/Header",
+        definitions: [
+          {
+            type: "uint32",
+            isArray: false,
+            name: "seq",
+            isComplex: false,
+          },
+          {
+            type: "time",
+            isArray: false,
+            name: "stamp",
+            isComplex: false,
+          },
+          {
+            type: "string",
+            isArray: false,
+            name: "frame_id",
+            isComplex: false,
+          },
+        ],
+      },
+    ]);
+  });
 });
