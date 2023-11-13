@@ -154,6 +154,9 @@ function findTypeByName(
     if (name.includes("/")) {
       // Fully-qualified name, match exact
       return typeName === name;
+    } else if (name === "Header") {
+      // Header is a special case, see http://wiki.ros.org/msg#Fields
+      return typeName === `std_msgs/Header`;
     } else if (typeNamespace) {
       // Type namespace is given, create fully-qualified name and match exact
       return typeName === `${typeNamespace}/${name}`;
