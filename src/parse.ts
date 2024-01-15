@@ -76,12 +76,20 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Me
       : buildType(definitionLines, ROS1_GRAMMAR),
   );
 
+  // Filter out duplicate types.
+  // This will avoid that searching a type by name will return more than one result.
+  const seenTypes = new Set<string>();
+  const uniqueTypes = types.filter((definition) => {
+    const typeName = definition.name ?? "";
+    return seenTypes.has(typeName) ? false : seenTypes.add(typeName);
+  });
+
   // Fix up complex type names
   if (options.skipTypeFixup !== true) {
-    fixupTypes(types);
+    fixupTypes(uniqueTypes);
   }
 
-  return types;
+  return uniqueTypes;
 }
 
 /**
