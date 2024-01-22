@@ -80,8 +80,9 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Me
       : buildType(definitionLines, ROS1_GRAMMAR),
   );
 
-  // Filter out duplicate types.
-  // This will avoid that searching a type by name will return more than one result.
+  // Filter out duplicate types to handle the case where schemas are erroneously duplicated
+  // e.g. caused by a bug in `mcap convert`. Removing duplicates here will avoid that searching
+  // a type by name will return more than one result.
   const seenTypes: MessageDefinition[] = [];
   const uniqueTypes = types.filter((definition) => {
     return seenTypes.find((otherDefinition) => isMsgDefEqual(definition, otherDefinition))
