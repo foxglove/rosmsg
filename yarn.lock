@@ -416,10 +416,10 @@
     tsutils "^3"
     typescript "^4"
 
-"@foxglove/message-definition@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@foxglove/message-definition/-/message-definition-0.2.0.tgz#e31922e58e57d224717bcfbd20d3cbaad709dc6b"
-  integrity sha512-IQHIGCvBZR8GIua9nEpS+hsMF3gm1bfbrrnjG0rgtcFBWiNuKbzx4vIP8OIwDC+8wtwcFdfJhf4Vp5TPFiUUcQ==
+"@foxglove/message-definition@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@foxglove/message-definition/-/message-definition-0.3.1.tgz#63f48e8f3de47bba8943d8bfa8021af635254f1c"
+  integrity sha512-nkPowiED67LjcKEC77CprkUG3XvSsFHHR9HEwWCuhnIC2wm0W57T1J+WWvteoArZ7SdGGlKzSYSRFyjQkgmITw==
 
 "@humanwhocodes/config-array@^0.10.4":
   version "0.10.4"

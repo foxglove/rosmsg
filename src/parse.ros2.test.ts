@@ -1109,4 +1109,71 @@ string<=10[<=5] up_to_five_strings_up_to_ten_characters_each
       },
     ]);
   });
+
+  it("handles duplicate types", () => {
+    const messageDefinition = `
+    foo_msgs/msg/TypeA a
+    foo_msgs/msg/TypeB b
+    ================================================================================
+    MSG: foo_msgs/msg/TypeA
+
+    uint64 u
+    ================================================================================
+    MSG: foo_msgs/msg/TypeB
+
+    foo_msgs/msg/TypeA a
+    int32 i
+    ================================================================================
+    MSG: foo_msgs/msg/TypeA
+
+    uint64 u
+    `;
+    const types = parse(messageDefinition, { ros2: true });
+    expect(types).toEqual([
+      {
+        definitions: [
+          {
+            type: "foo_msgs/msg/TypeA",
+            isArray: false,
+            name: "a",
+            isComplex: true,
+          },
+          {
+            type: "foo_msgs/msg/TypeB",
+            isArray: false,
+            name: "b",
+            isComplex: true,
+          },
+        ],
+      },
+      {
+        name: "foo_msgs/msg/TypeA",
+        definitions: [
+          {
+            type: "uint64",
+            isArray: false,
+            name: "u",
+            isComplex: false,
+          },
+        ],
+      },
+      {
+        name: "foo_msgs/msg/TypeB",
+        definitions: [
+          {
+            type: "foo_msgs/msg/TypeA",
+            isArray: false,
+            name: "a",
+            isComplex: true,
+          },
+          {
+            type: "int32",
+            isArray: false,
+            name: "i",
+            isComplex: false,
+          },
+        ],
+      },
+    ]);
+  });
 });

@@ -7,7 +7,11 @@
 //   found at http://www.apache.org/licenses/LICENSE-2.0
 //   You may not use this file except in compliance with the License.
 
-import { MessageDefinition, MessageDefinitionField } from "@foxglove/message-definition";
+import {
+  MessageDefinition,
+  MessageDefinitionField,
+  isMsgDefEqual,
+} from "@foxglove/message-definition";
 import { Grammar, Parser } from "nearley";
 
 import { buildRos2Type } from "./buildRos2Type";
@@ -76,12 +80,22 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Me
       : buildType(definitionLines, ROS1_GRAMMAR),
   );
 
+  // Filter out duplicate types to handle the case where schemas are erroneously duplicated
+  // e.g. caused by a bug in `mcap convert`. Removing duplicates here will avoid that searching
+  // a type by name will return more than one result.
+  const seenTypes: MessageDefinition[] = [];
+  const uniqueTypes = types.filter((definition) => {
+    return seenTypes.find((otherDefinition) => isMsgDefEqual(definition, otherDefinition))
+      ? false
+      : seenTypes.push(definition); // Always evaluates to true;
+  });
+
   // Fix up complex type names
   if (options.skipTypeFixup !== true) {
-    fixupTypes(types);
+    fixupTypes(uniqueTypes);
   }
 
-  return types;
+  return uniqueTypes;
 }
 
 /**

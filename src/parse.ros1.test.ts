@@ -623,4 +623,71 @@ describe("fixupTypes", () => {
       },
     ]);
   });
+
+  it("handles duplicate types", () => {
+    const messageDefinition = `
+    foo_msgs/TypeA a
+    foo_msgs/TypeB b
+    ================================================================================
+    MSG: foo_msgs/TypeA
+
+    uint64 u
+    ================================================================================
+    MSG: foo_msgs/TypeB
+
+    foo_msgs/TypeA a
+    int32 i
+    ================================================================================
+    MSG: foo_msgs/TypeA
+
+    uint64 u
+    `;
+    const types = parse(messageDefinition, { ros2: true });
+    expect(types).toEqual([
+      {
+        definitions: [
+          {
+            type: "foo_msgs/TypeA",
+            isArray: false,
+            name: "a",
+            isComplex: true,
+          },
+          {
+            type: "foo_msgs/TypeB",
+            isArray: false,
+            name: "b",
+            isComplex: true,
+          },
+        ],
+      },
+      {
+        name: "foo_msgs/TypeA",
+        definitions: [
+          {
+            type: "uint64",
+            isArray: false,
+            name: "u",
+            isComplex: false,
+          },
+        ],
+      },
+      {
+        name: "foo_msgs/TypeB",
+        definitions: [
+          {
+            type: "foo_msgs/TypeA",
+            isArray: false,
+            name: "a",
+            isComplex: true,
+          },
+          {
+            type: "int32",
+            isArray: false,
+            name: "i",
+            isComplex: false,
+          },
+        ],
+      },
+    ]);
+  });
 });
