@@ -7,7 +7,11 @@
 //   found at http://www.apache.org/licenses/LICENSE-2.0
 //   You may not use this file except in compliance with the License.
 
-import { MessageDefinition, MessageDefinitionField } from "@foxglove/message-definition";
+import {
+  MessageDefinition,
+  MessageDefinitionField,
+  isMsgDefEqual,
+} from "@foxglove/message-definition";
 import { Grammar, Parser } from "nearley";
 
 import { buildRos2Type } from "./buildRos2Type";
@@ -78,10 +82,11 @@ export function parse(messageDefinition: string, options: ParseOptions = {}): Me
 
   // Filter out duplicate types.
   // This will avoid that searching a type by name will return more than one result.
-  const seenTypes = new Set<string>();
+  const seenTypes: MessageDefinition[] = [];
   const uniqueTypes = types.filter((definition) => {
-    const typeName = definition.name ?? "";
-    return seenTypes.has(typeName) ? false : seenTypes.add(typeName);
+    return seenTypes.find((otherDefinition) => isMsgDefEqual(definition, otherDefinition))
+      ? false
+      : seenTypes.push(definition); // Always evaluates to true;
   });
 
   // Fix up complex type names
