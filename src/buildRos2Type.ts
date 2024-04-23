@@ -200,7 +200,7 @@ function normalizeType(type: string): string {
     case "char":
       return "uint8";
     case "byte":
-      return "int8";
+      return "uint8";
     case "builtin_interfaces/Time":
     case "builtin_interfaces/msg/Time":
       return "time";
