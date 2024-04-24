@@ -187,7 +187,7 @@ describe("parseMessageDefinition", () => {
             isArray: false,
             isComplex: false,
             name: "y",
-            type: "int8",
+            type: "uint8",
           },
         ],
         name: undefined,
@@ -803,35 +803,35 @@ uint32 line`;
       {
         definitions: [
           {
-            type: "int8",
+            type: "uint8",
             name: "DEBUG",
             isConstant: true,
             value: 10,
             valueText: "10",
           },
           {
-            type: "int8",
+            type: "uint8",
             name: "INFO",
             isConstant: true,
             value: 20,
             valueText: "20",
           },
           {
-            type: "int8",
+            type: "uint8",
             name: "WARN",
             isConstant: true,
             value: 30,
             valueText: "30",
           },
           {
-            type: "int8",
+            type: "uint8",
             name: "ERROR",
             isConstant: true,
             value: 40,
             valueText: "40",
           },
           {
-            type: "int8",
+            type: "uint8",
             name: "FATAL",
             isConstant: true,
             value: 50,
@@ -1171,6 +1171,28 @@ string<=10[<=5] up_to_five_strings_up_to_ten_characters_each
             isArray: false,
             name: "i",
             isComplex: false,
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("handles bounded byte field with default value", () => {
+    // Can be found in /opt/ros/<distro>/share/test_msgs/msg/BoundedSequences.msg
+    const messageDefinition = `
+    byte[<=3] byte_values_default [0, 1, 255]
+    `;
+    const types = parse(messageDefinition, { ros2: true });
+    expect(types).toEqual([
+      {
+        definitions: [
+          {
+            type: "uint8",
+            isArray: true,
+            name: "byte_values_default",
+            isComplex: false,
+            defaultValue: [0, 1, 255],
+            arrayUpperBound: 3,
           },
         ],
       },
