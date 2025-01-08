@@ -1,5 +1,8 @@
 # @foxglove/rosmsg
 
+> [!IMPORTANT]
+> This package has moved to https://github.com/foxglove/ros-typescript.
+
 > _ROS1 and ROS2 message definition parser_
 
 [![npm version](https://img.shields.io/npm/v/@foxglove/rosmsg.svg?style=flat)](https://www.npmjs.com/package/@foxglove/rosmsg)
